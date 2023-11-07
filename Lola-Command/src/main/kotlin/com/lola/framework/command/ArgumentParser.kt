@@ -7,12 +7,19 @@ import java.lang.UnsupportedOperationException
 import kotlin.reflect.KClass
 
 interface ArgumentParser {
-    fun canParse(type: Type): Boolean
 
-    fun parse(argsLeft: String, isLast: Boolean): ParseResult
+    fun parse(pctx: ParsingContext): ParseResult
+
+    fun complete(argsLeft: String): List<String> {
+        return emptyList()
+    }
 
     fun complete(argsLeft: String, isLast: Boolean): List<String> {
-        return emptyList()
+        return complete(argsLeft)
+    }
+
+    fun complete(argsLeft: String, isLast: Boolean, parsed: Map<ArgumentProperty, ParseResultSuccess<*>>): List<String> {
+        return complete(argsLeft, isLast)
     }
 }
 

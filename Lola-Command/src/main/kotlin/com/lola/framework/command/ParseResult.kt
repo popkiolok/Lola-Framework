@@ -1,12 +1,17 @@
 package com.lola.framework.command
 
-import java.lang.IllegalStateException
-
 interface ParseResult
 
-class ParseResultSuccess(val value: Any?, val argLength: Int) : ParseResult
+class ParseResultSuccess<T>(val value: T, val argLength: Int) : ParseResult {
+    operator fun component1() = value
+    operator fun component2() = argLength
+}
 
-class  ParseResultFailure(val message: () -> String) : ParseResult
+class ParseResultFailure(val message: () -> String) : ParseResult
 
-class  ParseResultMultiError(val messages: Iterable<() -> String>) : ParseResult
+class ParseResultMultiError(
+    val parsed: Map<ArgumentProperty, ParseResultSuccess<*>>,
+    val lastFailed: ArgumentProperty,
+    val messages: Iterable<() -> String>
+) : ParseResult
 

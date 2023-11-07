@@ -12,7 +12,7 @@ import io.github.oshai.kotlinlogging.KotlinLogging
 
 
 var limit = 2000
-var depth = 3
+var depth = 1
 
 private val mockitoRegex = Regex("\\\$MockitoMock\\\$.+")
 

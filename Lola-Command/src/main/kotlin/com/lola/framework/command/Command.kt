@@ -5,4 +5,4 @@ package com.lola.framework.command
  *
  * @param name Command name. Can contain spaces for subcommands.
  */
-annotation class Command(val name: String)
+annotation class Command(val name: String, val info: String = "")

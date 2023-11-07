@@ -8,4 +8,4 @@ val Container.isModule: Boolean
     get() = hasDecoration<ModuleContainer>()
 
 val Container.asModule: ModuleContainer
-    get() = getDecoration<ModuleContainer>() ?: throw NullPointerException("Container $this is not a module.")
+    get() = getDecoration<ModuleContainer>() ?: throw NullPointerException("Container '$this' is not a module.")

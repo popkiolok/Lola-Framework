@@ -5,18 +5,19 @@ import com.lola.framework.core.container.ContainerInstance
 import com.lola.framework.core.container.context.Context
 import com.lola.framework.core.decoration.hasDecoration
 import com.lola.framework.core.function.parameter.Parameter
+import kotlin.reflect.KClass
 
 /**
  * Storage of module instances.
  */
-class ModuleInstanceStorage(private val ctxInitializer: (Context) -> Unit = {}) {
+class ModuleInstanceStorage(val ctxInitializer: (Context) -> Unit = {}) {
     /**
      * Returns unmodifiable view collection of currently loaded modules in this [ModuleInstanceStorage].
      */
     val loaded: Collection<ContainerInstance>
         get() = loadedMap.values
 
-    private val loadedMap: MutableMap<Container, ContainerInstance> = LinkedHashMap()
+    val loadedMap: MutableMap<Container, ContainerInstance> = LinkedHashMap()
 
     /**
      * Creates new instance for container, if module is not loaded and returns this instance.
@@ -43,6 +44,7 @@ class ModuleInstanceStorage(private val ctxInitializer: (Context) -> Unit = {}) 
                     it(inst)
                 }
             }
+            log.info { "Loaded module '${module.name}'." }
             inst
         }
     }
@@ -60,6 +62,7 @@ class ModuleInstanceStorage(private val ctxInitializer: (Context) -> Unit = {}) 
                 it(inst)
             }
         }
+        log.info { "Unloaded module '${module.name}'." }
     }
 
     /**
@@ -71,8 +74,12 @@ class ModuleInstanceStorage(private val ctxInitializer: (Context) -> Unit = {}) 
     fun isLoaded(module: ModuleContainer): Boolean {
         return loadedMap.containsKey(module.self)
     }
+}
 
-    fun ifLoaded(module: ModuleContainer, action: (ContainerInstance) -> Unit) {
-        loadedMap[module.self]?.let(action)
-    }
+inline fun ModuleInstanceStorage.ifLoaded(module: ModuleContainer, action: (ContainerInstance) -> Unit) {
+    loadedMap[module.self]?.let(action)
+}
+
+inline fun <reified T : Any> ModuleInstanceStorage.ifLoaded(module: KClass<T>, action: (T) -> Unit) {
+    ifLoaded(ModuleRegistry[module]) { action(it.instance as T) }
 }

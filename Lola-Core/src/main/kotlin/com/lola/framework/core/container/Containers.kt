@@ -1,6 +1,7 @@
 package com.lola.framework.core.container
 
 import com.lola.framework.core.container.context.Context
+import com.lola.framework.core.log
 import java.util.*
 import kotlin.reflect.KClass
 
@@ -41,6 +42,7 @@ fun subscribeAddContainerListener(listener: AddContainerListener) {
         return
     }
     addListeners[listener::class] = listener
+    log.info { "Found Add Container Listener '$listener'." }
     getFoundContainers().forEach { listener.onContainerAdded(it) }
 }
 

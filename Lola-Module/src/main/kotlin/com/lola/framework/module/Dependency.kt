@@ -12,12 +12,10 @@ import com.lola.framework.core.property.decorations.PropertyValueSupplier
 
 abstract class Dependency<T : Annotated>(final override val self: T, valueType: Type) :
     ValueSupplier<T, Any?> {
-    private val module: ModuleContainer
-
-    init {
+    private val module: ModuleContainer by lazy {
         val ann = self.annotations.getAnnotation(Dep::class)
-        module = if (ann.name.isEmpty()) {
-            getKotlinContainer(valueType.clazz)!!.asModule
+        if (ann.name.isEmpty()) {
+            ModuleRegistry[valueType.clazz]
         } else ModuleRegistry[ann.name]
     }
 

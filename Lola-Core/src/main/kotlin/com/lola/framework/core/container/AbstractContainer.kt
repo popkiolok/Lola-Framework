@@ -57,7 +57,7 @@ abstract class AbstractContainer : Container, AbstractDecorated<ContainerDecorat
         decorate(ContextContainer(this))
 
         registered += this
-        log.debug { "Creating container $this." }
+        log.debug { "Created container $this." }
     }
 
     override fun createInstance(

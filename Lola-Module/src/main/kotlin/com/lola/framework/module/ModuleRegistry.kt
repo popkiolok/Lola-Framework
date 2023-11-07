@@ -6,6 +6,9 @@ import com.google.common.collect.Multimaps
 import com.lola.framework.core.container.Container
 import com.lola.framework.core.container.AddContainerListener
 import com.lola.framework.core.container.subscribeAddContainerListener
+import com.lola.framework.core.kotlin.KotlinContainer
+import com.lola.framework.core.kotlin.getKotlinContainer
+import kotlin.reflect.KClass
 
 object ModuleRegistry : AddContainerListener {
     val modules: Collection<ModuleContainer>
@@ -38,6 +41,10 @@ object ModuleRegistry : AddContainerListener {
      */
     operator fun get(name: String): ModuleContainer {
         return modulesByName[name] ?: throw NullPointerException("Module with name $name does not exist.")
+    }
+
+    operator fun <T : Any> get(clazz: KClass<T>): ModuleContainer {
+        return (getKotlinContainer(clazz) ?: KotlinContainer(clazz)).asModule
     }
 
     override fun onContainerAdded(container: Container) {

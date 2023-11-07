@@ -5,44 +5,44 @@ import com.lola.framework.core.Type
 import java.math.BigDecimal
 import java.math.BigInteger
 
-class ArgumentByte : ArgumentParser {
+class ArgumentByte : SingletonArgumentParser {
     override fun canParse(type: Type) = type.clazz == Byte::class
-    override fun parse(argsLeft: String, isLast: Boolean) = parse(argsLeft) { it.toByte() }
+    override fun parse(pctx: ParsingContext) = parse(pctx.argsLeft) { it.toByte() }
 }
 
-class ArgumentShort : ArgumentParser {
+class ArgumentShort : SingletonArgumentParser {
     override fun canParse(type: Type) = type.clazz == Short::class
-    override fun parse(argsLeft: String, isLast: Boolean) = parse(argsLeft) { it.toShort() }
+    override fun parse(pctx: ParsingContext) = parse(pctx.argsLeft) { it.toShort() }
 }
 
-class ArgumentInt : ArgumentParser {
+class ArgumentInt : SingletonArgumentParser {
     override fun canParse(type: Type) = type.clazz == Int::class
-    override fun parse(argsLeft: String, isLast: Boolean) = parse(argsLeft) { it.toInt() }
+    override fun parse(pctx: ParsingContext) = parse(pctx.argsLeft) { it.toInt() }
 }
 
-class ArgumentLong : ArgumentParser {
+class ArgumentLong : SingletonArgumentParser {
     override fun canParse(type: Type) = type.clazz == Long::class
-    override fun parse(argsLeft: String, isLast: Boolean) = parse(argsLeft) { it.toLong() }
+    override fun parse(pctx: ParsingContext) = parse(pctx.argsLeft) { it.toLong() }
 }
 
-class ArgumentBigInteger : ArgumentParser {
+class ArgumentBigInteger : SingletonArgumentParser {
     override fun canParse(type: Type) = type.clazz == BigInteger::class
-    override fun parse(argsLeft: String, isLast: Boolean) = parse(argsLeft) { it.toBigInteger() }
+    override fun parse(pctx: ParsingContext) = parse(pctx.argsLeft) { it.toBigInteger() }
 }
 
-class ArgumentFloat : ArgumentParser {
+class ArgumentFloat : SingletonArgumentParser {
     override fun canParse(type: Type) = type.clazz == Float::class
-    override fun parse(argsLeft: String, isLast: Boolean) = parse(argsLeft) { it.toFloat() }
+    override fun parse(pctx: ParsingContext) = parse(pctx.argsLeft) { it.toFloat() }
 }
 
-class ArgumentDouble : ArgumentParser {
+class ArgumentDouble : SingletonArgumentParser {
     override fun canParse(type: Type) = type.clazz == Double::class
-    override fun parse(argsLeft: String, isLast: Boolean) = parse(argsLeft) { it.toDouble() }
+    override fun parse(pctx: ParsingContext) = parse(pctx.argsLeft) { it.toDouble() }
 }
 
-class ArgumentBigDecimal : ArgumentParser {
+class ArgumentBigDecimal : SingletonArgumentParser {
     override fun canParse(type: Type) = type.clazz == BigDecimal::class
-    override fun parse(argsLeft: String, isLast: Boolean) = parse(argsLeft) { it.toBigDecimal() }
+    override fun parse(pctx: ParsingContext) = parse(pctx.argsLeft) { it.toBigDecimal() }
 }
 
 private inline fun parse(argsLeft: String, parser: (String) -> Number): ParseResult {

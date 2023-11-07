@@ -20,31 +20,56 @@ class KotlinContainer(
     override val annotations = KotlinAnnotationResolver(clazz)
 
     init {
-        val constructors = clazz.constructors.map { KotlinConstructor(it) }
-        addConstructors(constructors)
-        val allParams = constructors.flatMap { it.parameters }
+        runCatching {
+            val constructors = clazz.constructors.map { KotlinConstructor(it) }
+            addConstructors(constructors)
+            val primaryConstructor = constructors.maxByOrNull { it.parameters.size }
+            val allParams = constructors.flatMap { it.parameters }
 
-        val declaredMemberProperties = clazz.declaredMemberProperties
-        val declaredMemberFunctions = clazz.declaredMemberFunctions
+            // KotlinReflectionInternalError during constructing container for Kotlin Function1 class
+            runCatching {
+                val declaredMemberProperties = clazz.declaredMemberProperties
+                val declaredMemberFunctions = clazz.declaredMemberFunctions
 
-        val props = declaredMemberProperties.map { prop ->
-            KotlinProperty(prop, ppResolvers.asSequence().flatMap { it.resolve(allParams, prop) }.toSet().toList())
-        }
-        addProperties(props)
+                val props = declaredMemberProperties.map { prop ->
+                    KotlinProperty(
+                        prop,
+                        ppResolvers.asSequence().flatMap { it.resolve(allParams, prop) }.toSet().toList()
+                    )
+                }
+                val orderedProps = props.asSequence().withIndex().sortedBy { (i, p) ->
+                    if (p.parameters.isEmpty() || primaryConstructor == null) {
+                        65536 + i
+                    } else {
+                        val paramIndex = p.parameters.maxOf { primaryConstructor.parameters.indexOf(it) }
+                        if (paramIndex == -1) 65536 + i else paramIndex
+                    }
+                }.map { it.value }
 
-        val funElements = declaredMemberFunctions.map { KotlinFunction(it) }
-        addFunctions(funElements)
+                addProperties(orderedProps.toList())
 
-        val superClassSet = clazz.superclasses.toSet()
-        superContainers += clazz.allSuperclasses.map {
-            val superContainer = getKotlinContainer(it) ?: KotlinContainer(it, ppResolvers)
-            if (superClassSet.contains(it)) {
-                superContainer.implementations += this
+                val funElements = declaredMemberFunctions.map { KotlinFunction(it) }
+                addFunctions(funElements)
             }
-            superContainer
-        }
 
-        kotlinContainersByKClass[clazz] = this
-        afterInit()
+            val superClassSet = clazz.superclasses.toSet()
+            superContainers += clazz.allSuperclasses.map {
+                val superContainer = getKotlinContainer(it) ?: KotlinContainer(it, ppResolvers)
+                if (superClassSet.contains(it)) {
+                    superContainer.implementations += this
+                }
+                superContainer
+            }
+
+            kotlinContainersByKClass[clazz] = this
+            afterInit()
+        }.onFailure {
+            log.error { "An error occurred while creating container '$this'." }
+            it.printStackTrace()
+        }
+    }
+
+    override fun toString(): String {
+        return "[KotlinContainer/${hashCode()}] $name ($clazz)"
     }
 }
