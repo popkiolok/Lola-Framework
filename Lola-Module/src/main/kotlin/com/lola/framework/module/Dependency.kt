@@ -21,6 +21,10 @@ abstract class Dependency<T : Annotated>(final override val self: T, valueType: 
 
     override fun supplyValue(context: Context): Result<Any?> {
         return runCatching { (context[ModuleInstanceStorage::class] as ModuleInstanceStorage).load(module).instance }
+            .onFailure {
+                log.error { "An error occurred while supplying dependency for '$self': '${it.message}'." }
+                it.printStackTrace()
+            }
     }
 }
 

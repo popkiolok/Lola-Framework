@@ -28,7 +28,7 @@ class ModuleInstanceStorage(val ctxInitializer: (Context) -> Unit = {}) {
      */
     fun load(module: ModuleContainer, params: Map<Parameter, Any?> = emptyMap()): ContainerInstance {
         val container = module.self
-        return loadedMap.getOrPut(container) {
+        return loadedMap[container] ?: run {
             val inst = container.createInstance(
                 params,
                 ctxInitializer = { ctx ->
@@ -39,6 +39,10 @@ class ModuleInstanceStorage(val ctxInitializer: (Context) -> Unit = {}) {
                     ) { this }
                     ctxInitializer(ctx)
                 })
+            // Important to put instance before calling on load functions, because code executing in these functions
+            // can call load function for this module another time, and if instance is not present in the map,
+            // the module will be loaded twice.
+            loadedMap[container] = inst
             container.allFunctions.forEach {
                 if (it.hasDecoration<OnLoadFunction>()) {
                     it(inst)

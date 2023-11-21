@@ -78,7 +78,7 @@ interface Container : Nameable, Decorated<ContainerDecoration>, Annotated {
      * @throws NullPointerException If no constructor present for the given parameters.
      */
     fun createInstance(
-        params: Map<Parameter, Any?>,
+        params: Map<Parameter, Any?> = emptyMap(),
         propertyValues: Map<Property, Any?> = emptyMap(),
         ctxInitializer: (Context) -> Unit = {}
     ): ContainerInstance
