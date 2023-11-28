@@ -1,10 +1,7 @@
 package com.lola.framework.core.kotlin
 
-import com.lola.framework.core.function.parameter.AbstractParameter
-import com.lola.framework.core.util.Option
-import kotlin.reflect.KAnnotatedElement
+import com.lola.framework.core.impl.AbstractParameter
 import kotlin.reflect.KParameter
-import kotlin.reflect.jvm.jvmErasure
 
 class KotlinParameter(val kParameter: KParameter) :
     AbstractParameter(kParameter.name ?: "namelessParameter", KotlinType(kParameter.type)) {

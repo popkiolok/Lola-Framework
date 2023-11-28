@@ -2,11 +2,8 @@ package com.lola.framework.command
 
 import com.lola.framework.core.container.context.Auto
 import com.lola.framework.core.container.context.Context
-import com.lola.framework.core.function.parameter.Parameter
-import com.lola.framework.core.property.Property
 import com.lola.framework.module.Module
 import com.lola.framework.setting.Setting
-import com.lola.framework.setting.setting
 import org.apache.commons.text.similarity.LevenshteinDistance
 
 @Module(group = "Lola-Command", path = "Command System")

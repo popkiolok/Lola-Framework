@@ -1,17 +1,17 @@
 package com.lola.framework.core.decoration
 
-import com.lola.framework.core.container.context.Context
+import com.lola.framework.core.context.Context
 
 /**
- * Supplies value during some reference initialization.
+ * Supplies value to initialize some reference.
  *
  * @param D The type of the decorated object.
  * @param T The type of value to supply.
  */
-interface ValueSupplier<D : Any, T : Any?> : Decoration<D> {
+interface ValueSupplier<D : Decorated, T : Any?> : Decoration<D> {
     /**
      * @param context The context initialization happens in.
-     * @return Supplied value wrapped in [Result], or [Result.Failure] if value can not be supplied.
+     * @return Supplied value.
      */
-    fun supplyValue(context: Context): Result<T>
+    fun supplyValue(context: Context): T
 }

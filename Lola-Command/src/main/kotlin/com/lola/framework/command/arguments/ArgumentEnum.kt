@@ -1,12 +1,12 @@
 package com.lola.framework.command.arguments
 
 import com.lola.framework.command.*
-import com.lola.framework.core.Type
+import com.lola.framework.core.LType
 import kotlin.reflect.full.isSubclassOf
 
 class ArgumentEnumFabric : ArgumentParserFabric<ArgumentEnum> {
 
-    override fun canParse(type: Type): Boolean {
+    override fun canParse(type: LType): Boolean {
         return type.clazz.isSubclassOf(Enum::class)
     }
 

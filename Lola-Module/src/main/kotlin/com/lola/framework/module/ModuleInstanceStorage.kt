@@ -1,10 +1,11 @@
 package com.lola.framework.module
 
-import com.lola.framework.core.container.Container
+import com.lola.framework.core.LClass
 import com.lola.framework.core.container.ContainerInstance
 import com.lola.framework.core.container.context.Context
 import com.lola.framework.core.decoration.hasDecoration
-import com.lola.framework.core.function.parameter.Parameter
+import com.lola.framework.core.LParameter
+import com.lola.framework.core.kotlin.lola
 import kotlin.reflect.KClass
 
 /**
@@ -17,7 +18,7 @@ class ModuleInstanceStorage(val ctxInitializer: (Context) -> Unit = {}) {
     val loaded: Collection<ContainerInstance>
         get() = loadedMap.values
 
-    val loadedMap: MutableMap<Container, ContainerInstance> = LinkedHashMap()
+    val loadedMap: MutableMap<LClass, ContainerInstance> = LinkedHashMap()
 
     /**
      * Creates new instance for container, if module is not loaded and returns this instance.
@@ -26,7 +27,7 @@ class ModuleInstanceStorage(val ctxInitializer: (Context) -> Unit = {}) {
      * @param params Parameters for container constructor.
      * @return The loaded container instance.
      */
-    fun load(module: ModuleContainer, params: Map<Parameter, Any?> = emptyMap()): ContainerInstance {
+    fun load(module: ModuleContainer, params: Map<LParameter, Any?> = emptyMap()): ContainerInstance {
         val container = module.self
         return loadedMap[container] ?: run {
             val inst = container.createInstance(
@@ -80,8 +81,12 @@ class ModuleInstanceStorage(val ctxInitializer: (Context) -> Unit = {}) {
     }
 }
 
-inline fun ModuleInstanceStorage.ifLoaded(module: ModuleContainer, action: (ContainerInstance) -> Unit) {
-    loadedMap[module.self]?.let(action)
+inline fun <T : Any> ModuleInstanceStorage.ifLoaded(module: ModuleContainer<T>, action: (T) -> Unit) {
+    (loadedMap[module.self]?.instance as T).let(action)
+}
+
+inline fun <reified T : Any> ModuleInstanceStorage.ifLoaded(action: (T) -> Unit) {
+    ifLoaded(T::class.lola.asModule.self, action)
 }
 
 inline fun <reified T : Any> ModuleInstanceStorage.ifLoaded(module: KClass<T>, action: (T) -> Unit) {

@@ -1,18 +1,13 @@
 package com.lola.framework.core.kotlin
 
-import com.lola.framework.core.Type
-import com.lola.framework.core.annotation.AnnotationResolver
 import com.lola.framework.core.container.ContainerInstance
-import com.lola.framework.core.function.parameter.Parameter
-import com.lola.framework.core.property.AbstractProperty
-import com.lola.framework.core.property.Property
+import com.lola.framework.core.LParameter
+import com.lola.framework.core.impl.AbstractProperty
 import com.lola.framework.core.util.Option
 import java.lang.IllegalStateException
-import kotlin.reflect.KAnnotatedElement
 import kotlin.reflect.KMutableProperty
 import kotlin.reflect.KProperty
 import kotlin.reflect.jvm.isAccessible
-import kotlin.reflect.jvm.jvmErasure
 
 class KotlinProperty : AbstractProperty {
 
@@ -23,12 +18,6 @@ class KotlinProperty : AbstractProperty {
     override val parameters: List<KotlinParameter>
 
     val kProperty: KProperty<*>
-
-    override val hasDefaultValue: Boolean
-        get() = !kProperty.isLateinit && (parameters.isEmpty() || parameters.any { it.isOptional })
-
-    override val defaultValue: Option<Any?>
-        get() = Option.empty() // TODO
 
     constructor(kProperty: KProperty<*>, parameters: List<KotlinParameter>) :
             this(
@@ -73,7 +62,7 @@ class KotlinProperty : AbstractProperty {
     }
 
     @Suppress("UNCHECKED_CAST") // TODO
-    override fun undecoratedCopy(parameters: List<Parameter>): KotlinProperty {
+    override fun undecoratedCopy(parameters: List<LParameter>): KotlinProperty {
         return KotlinProperty(kProperty, parameters as List<KotlinParameter>, name, type, mutable, annotations)
     }
 }

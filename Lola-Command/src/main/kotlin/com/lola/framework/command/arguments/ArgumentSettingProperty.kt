@@ -1,13 +1,13 @@
 package com.lola.framework.command.arguments
 
 import com.lola.framework.command.*
-import com.lola.framework.core.Type
+import com.lola.framework.core.LType
 import com.lola.framework.module.ModuleContainer
 import com.lola.framework.setting.SettingProperty
 import com.lola.framework.setting.settings
 
 class ArgumentSettingPropertyFabric : ArgumentParserFabric<ArgumentSettingProperty> {
-    override fun canParse(type: Type) = type.clazz == SettingProperty::class
+    override fun canParse(type: LType) = type.clazz == SettingProperty::class
 
     override fun create(argsContainer: ArgumentsContainer, argument: ArgumentProperty): ArgumentSettingProperty {
         val index = argsContainer.arguments.indexOf(argument)
@@ -26,7 +26,7 @@ class ArgumentSettingPropertyFabric : ArgumentParserFabric<ArgumentSettingProper
 }
 
 class ArgumentSettingProperty(private val associatedModuleArg: ArgumentProperty) : ArgumentString() {
-    override fun canParse(type: Type) = type.clazz == SettingProperty::class
+    override fun canParse(type: LType) = type.clazz == SettingProperty::class
 
     override fun parse(pctx: ParsingContext): ParseResult {
         val moduleContainer = pctx.parsed[associatedModuleArg]?.value as ModuleContainer

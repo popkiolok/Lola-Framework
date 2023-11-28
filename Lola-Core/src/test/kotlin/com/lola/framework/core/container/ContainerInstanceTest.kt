@@ -1,6 +1,7 @@
 package com.lola.framework.core.container
 
-import com.lola.framework.core.property.Property
+import com.lola.framework.core.LClass
+import com.lola.framework.core.LProperty
 import com.lola.framework.core.property.decorations.PropertyValueSupplier
 import com.lola.framework.core.util.Option
 import org.junit.jupiter.api.Assertions.assertDoesNotThrow
@@ -12,11 +13,11 @@ import org.mockito.kotlin.same
 import org.mockito.kotlin.whenever
 
 class ContainerInstanceTest {
-    private val container = mock<Container>(name = "Container Under Test")
+    private val container = mock<LClass>(name = "Container Under Test")
 
-    private val property1 = mock<Property>(name = "Property Under Test #1")
+    private val property1 = mock<LProperty>(name = "Property Under Test #1")
     private var p1Value: Any? = null
-    private val property2 = mock<Property>(name = "Property Under Test #2")
+    private val property2 = mock<LProperty>(name = "Property Under Test #2")
 
     private val workInitializer = mock<PropertyValueSupplier>(
         name = "Property Initializer That Can Initialize"

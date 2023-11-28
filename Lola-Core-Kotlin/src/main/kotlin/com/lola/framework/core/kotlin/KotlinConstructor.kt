@@ -2,7 +2,6 @@ package com.lola.framework.core.kotlin
 
 import com.lola.framework.core.constructor.Constructor
 import com.lola.framework.core.container.ContainerInstance
-import com.lola.framework.core.toJSON
 import com.lola.framework.core.util.Option
 import com.lola.framework.core.util.PLACEHOLDER
 import com.lola.framework.core.util.SparseArray
@@ -14,7 +13,7 @@ class KotlinConstructor(kConstructor: KFunction<*>) : Constructor, KotlinFunctio
     override fun tryInvoke(instance: ContainerInstance, params: SparseArray<Any?>): Option<Any> {
         var hasOptional = false
         params.complete { index ->
-            for (initializer in parameters[index].initializers) {
+            for (initializer in parameters[index].valueSuppliers) {
                 val result = initializer.supplyValue(instance.context)
                 log.trace { "Initializing parameter ${parameters[index]} by $initializer with value $result." }
                 result.onSuccess {

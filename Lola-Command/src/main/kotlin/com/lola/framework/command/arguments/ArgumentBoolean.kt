@@ -1,12 +1,12 @@
 package com.lola.framework.command.arguments
 
 import com.lola.framework.command.*
-import com.lola.framework.core.Type
+import com.lola.framework.core.LType
 
 class ArgumentBoolean : SingletonArgumentParser {
     private val failureResult = ParseResultFailure { "Argument is not '+'/'-', 'yes'/'no', 'y'/'n' or 'true'/'false'." }
 
-    override fun canParse(type: Type) = type.clazz == Boolean::class
+    override fun canParse(type: LType) = type.clazz == Boolean::class
 
     override fun parse(pctx: ParsingContext): ParseResult {
         val word = pctx.argsLeft.substringBefore(' ')

@@ -1,7 +1,8 @@
 package com.lola.framework.core.container
 
 import com.lola.framework.core.constructor.Constructor
-import com.lola.framework.core.function.parameter.Parameter
+import com.lola.framework.core.LParameter
+import com.lola.framework.core.impl.AbstractClass
 import com.lola.framework.core.toJSON
 import com.lola.framework.core.util.Option
 import io.github.oshai.kotlinlogging.KotlinLogging
@@ -22,7 +23,7 @@ class AbstractContainerTest {
 
     private val noParamsConstructor = mock<Constructor>(name = "No Parameters Constructor")
 
-    private val parameter1 = mock<Parameter>(name = "Parameter 1")
+    private val parameter1 = mock<LParameter>(name = "Parameter 1")
     private val oneParamConstructor = mock<Constructor>(name = "One Parameter Constructor")
 
     init {
@@ -48,7 +49,7 @@ class AbstractContainerTest {
 
     @Test
     fun `when createInstance with no parameters then create a ContainerInstance with constructor takes no parameters`() {
-        val params: Map<Parameter, Any?> = mapOf()
+        val params: Map<LParameter, Any?> = mapOf()
 
         val cInstance = abstractContainer.createInstance(params)
 
@@ -66,7 +67,7 @@ class AbstractContainerTest {
 
     @Test
     fun `when createInstance with no parameters on container with no default constructor then throw exception`() {
-        val params: Map<Parameter, Any?> = mapOf()
+        val params: Map<LParameter, Any?> = mapOf()
 
         assertThrows<NullPointerException> {
             containerWithNoDefaultConstructor.createInstance(params)
@@ -75,7 +76,7 @@ class AbstractContainerTest {
 
     @Test
     fun `when getContainerInstance after creating instance then return correct ContainerInstance object`() {
-        val params: Map<Parameter, Any?> = mapOf()
+        val params: Map<LParameter, Any?> = mapOf()
 
         val cInstance = abstractContainer.createInstance(params)
 
@@ -87,7 +88,7 @@ class AbstractContainerTest {
         assertEquals(null, getContainerInstance(null))
     }
 
-    abstract class TestContainer : AbstractContainer() {
+    abstract class TestContainer : AbstractClass() {
         override val name: String
             get() = "TestContainer"
         override val isFinal: Boolean

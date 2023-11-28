@@ -1,6 +1,6 @@
 package com.lola.framework.core.container.navigation
 
-import com.lola.framework.core.container.Container
+import com.lola.framework.core.LClass
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
@@ -8,7 +8,7 @@ import org.mockito.kotlin.mock
 import org.mockito.kotlin.whenever
 
 class ContainerNavigatorByNameIgnoreCaseTest {
-    private val container = mock<Container>(name = "Container Under Test")
+    private val container = mock<LClass>(name = "Container Under Test")
     private val containers = listOf(container)
     private val navigator = ContainerNavigatorByNameIgnoreCase(containers)
 

@@ -1,17 +1,17 @@
 package com.lola.framework.core.container.navigation
 
-import com.lola.framework.core.container.Container
+import com.lola.framework.core.LClass
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import org.mockito.kotlin.mock
 
 class AbstractContainerNavigatorTest {
-    private val container = mock<Container>(name = "Container Under Test")
+    private val container = mock<LClass>(name = "Container Under Test")
     private val containers = listOf(container)
 
     private val abstractContainerNavigator = object : AbstractContainerNavigator<Any>(containers) {
-        override fun isPair(key: Any, value: Container) = value.hashCode() == key
+        override fun isPair(key: Any, value: LClass) = value.hashCode() == key
     }
 
     @Test

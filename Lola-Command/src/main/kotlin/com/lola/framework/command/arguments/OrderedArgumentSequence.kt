@@ -1,10 +1,10 @@
 package com.lola.framework.command.arguments
 
 import com.lola.framework.command.*
-import com.lola.framework.core.Type
+import com.lola.framework.core.LType
 import com.lola.framework.core.annotation.hasAnnotation
-import com.lola.framework.core.container.AddContainerListener
-import com.lola.framework.core.container.Container
+import com.lola.framework.core.decoration.FoundClassListener
+import com.lola.framework.core.LClass
 import com.lola.framework.core.container.ContainerInstance
 import com.lola.framework.core.container.context.Context
 import com.lola.framework.core.container.subscribeAddContainerListener
@@ -12,25 +12,25 @@ import com.lola.framework.core.decoration.getDecoration
 import com.lola.framework.core.decoration.hasDecoration
 import java.lang.IllegalArgumentException
 
-class OrderedArgumentSequenceFabric : ArgumentParserFabric<OrderedArgumentSequence>, AddContainerListener {
+class OrderedArgumentSequenceFabric : ArgumentParserFabric<OrderedArgumentSequence>, FoundClassListener {
 
     init {
         subscribeAddContainerListener(this)
     }
 
-    override fun canParse(type: Type) = type.container?.let {
+    override fun canParse(type: LType) = type.clazz?.let {
         it.hasDecoration<ArgumentsContainer>() || it.implementations.any { imp -> imp.hasDecoration<ArgumentsContainer>() }
     } ?: false
 
-    override fun create(argumentType: Type): OrderedArgumentSequence {
-        return OrderedArgumentSequence(argumentType.container!!.let {
+    override fun create(argumentType: LType): OrderedArgumentSequence {
+        return OrderedArgumentSequence(argumentType.clazz!!.let {
             it.getDecoration<ArgumentsContainer>()
                 ?: it.implementations.first { imp -> imp.hasDecoration<ArgumentsContainer>() }
                     .getDecoration<ArgumentsContainer>()
         }!!)
     }
 
-    override fun onContainerAdded(container: Container) {
+    override fun onClassFound(container: LClass) {
         if (container.hasAnnotation<ComplexArgument>()) {
             container.decorate(ArgumentsContainer(container))
         }

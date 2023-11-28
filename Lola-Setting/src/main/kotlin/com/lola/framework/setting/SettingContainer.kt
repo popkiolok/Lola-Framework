@@ -4,18 +4,18 @@ import com.lola.framework.core.*
 import com.lola.framework.core.annotation.findAnnotation
 import com.lola.framework.core.container.*
 import com.lola.framework.core.container.decorations.AddPropertyListener
-import com.lola.framework.core.function.parameter.Parameter
-import com.lola.framework.core.property.Property
+import com.lola.framework.core.LParameter
+import com.lola.framework.core.LProperty
 
 /**
  * Registers [SettingProperty]s for container and provides access to their values.
  */
-class SettingContainer(override val self: Container) : ContainerDecoration,
+class SettingContainer(override val self: LClass) : ContainerDecoration,
     AddPropertyListener {
 
     val settings: List<SettingProperty> = ArrayList()
 
-    override fun onPropertyAdded(property: Property) {
+    override fun onPropertyAdded(property: LProperty) {
         val setting = property.findAnnotation<Setting>()
         if (setting != null) {
             val sett = SettingProperty(property, setting.name, setting.info)
@@ -27,8 +27,8 @@ class SettingContainer(override val self: Container) : ContainerDecoration,
     /**
      * Recursively retrieves a flat map of all setting values in the container and its super containers.
      * If some setting is container, value at its path in map will be
-     * an instance of [Container] class for the container associated with current property value.
-     * This container must be implementation of [Container] from [Property.type] [Type.container].
+     * an instance of [LClass] class for the container associated with current property value.
+     * This container must be implementation of [LClass] from [LProperty.type] [LType.clazz].
      *
      * @param instance The instance of the container.
      * @return A map of setting absolute paths to their corresponding values.
@@ -79,7 +79,7 @@ class SettingContainer(override val self: Container) : ContainerDecoration,
                 } else prop[instance!!]
                 val path = parent + setting.name
                 val containerInst by lazy { value?.let { getContainerInstance(value) } }
-                val container = prop.type?.container ?: containerInst?.container
+                val container = prop.type?.clazz ?: containerInst?.container
                 if (container == null || value == null) {
                     dest[path] = value
                 } else {
@@ -123,7 +123,7 @@ class SettingContainer(override val self: Container) : ContainerDecoration,
      * @param values Setting absolute path to value map.
      * @return True, if all top-level settings should be changed were mutable and values
      * were set successfully, false otherwise.
-     * @throws TypeCastException If value for container setting path is not [Container].
+     * @throws TypeCastException If value for container setting path is not [LClass].
      */
     fun setValues(instance: ContainerInstance, values: Map<Path<String>, Any?>): Boolean {
         return setValuesRelative(instance, values, emptyPath())
@@ -167,12 +167,12 @@ class SettingContainer(override val self: Container) : ContainerDecoration,
     ): Any? {
         val value = values[path]
         val currContainerInst by lazy { getContainerInstance(currValue) }
-        val container = if (value is Container) value else null
+        val container = if (value is LClass) value else null
 
         return if (container == null) {
             value
         } else {
-            val newContainer = value as Container
+            val newContainer = value as LClass
             //         if same implementation
             val inst = if (newContainer == currContainerInst?.container) {
                 currContainerInst!!
@@ -185,10 +185,10 @@ class SettingContainer(override val self: Container) : ContainerDecoration,
     }
 
     private fun makeContainer(
-        newContainer: Container, values: Map<Path<String>, Any?>,
+        newContainer: LClass, values: Map<Path<String>, Any?>,
         path: Path<String>
     ): ContainerInstance {
-        val params = HashMap<Parameter, Any?>()
+        val params = HashMap<LParameter, Any?>()
         newContainer.allProperties.forEach { prop ->
             val setting = prop.setting
             if (setting != null) {

@@ -1,17 +1,15 @@
 package com.lola.framework.command.arguments
 
 import com.lola.framework.command.*
-import com.lola.framework.command.arguments.ArgumentString
-import com.lola.framework.core.Type
+import com.lola.framework.core.LType
 import com.lola.framework.module.ModuleContainer
 import com.lola.framework.module.ModuleRegistry
-import org.apache.commons.lang3.StringUtils
 import org.apache.commons.text.similarity.LevenshteinDistance
 import kotlin.math.min
 
 class ArgumentModuleContainer : ArgumentString() {
 
-    override fun canParse(type: Type) = type.clazz == ModuleContainer::class
+    override fun canParse(type: LType) = type.clazz == ModuleContainer::class
 
     override fun parse(pctx: ParsingContext): ParseResult {
         val asString = (super.parseAsString(pctx.argsLeft, pctx.isLast))

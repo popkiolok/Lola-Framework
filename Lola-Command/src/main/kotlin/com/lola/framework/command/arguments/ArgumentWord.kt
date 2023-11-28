@@ -1,10 +1,10 @@
 package com.lola.framework.command.arguments
 
 import com.lola.framework.command.*
-import com.lola.framework.core.Type
+import com.lola.framework.core.LType
 
 open class ArgumentWord : SingletonArgumentParser {
-    override fun canParse(type: Type) = type.clazz == String::class
+    override fun canParse(type: LType) = type.clazz == String::class
 
     override fun parse(pctx: ParsingContext): ParseResult {
         return parseAsString(pctx.argsLeft)

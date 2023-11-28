@@ -1,12 +1,8 @@
 package com.lola.framework.event
 
-import com.google.common.collect.*
-import com.lola.framework.core.container.ContainerInstance
-import com.lola.framework.core.container.subscribeAddContainerListener
 import com.lola.framework.module.Module
 import com.lola.framework.setting.Setting
 import it.unimi.dsi.fastutil.objects.Reference2ObjectOpenHashMap
-import java.util.*
 
 @Module(group = "Lola-Event", path = "EventSystem", info = "Stores active event listeners and allows to call events.")
 class EventSystem(
@@ -17,24 +13,13 @@ class EventSystem(
      * Number of active listeners in the [EventSystem].
      */
     val listeners: Int
-        get() = attached.asMap().map { it.value.size }.sum()
+        get() = attached.entries.sumOf { it.value.size }
 
     /**
      * Currently attached (active) event listeners. Event name to listeners for this event multimap.
      * Event name **must** be interned string.
      */
-    internal val attached: Multimap<String, Pair<ContainerInstance, EventListener>> =
-        Multimaps.newMultimap(Reference2ObjectOpenHashMap<String, Collection<Pair<ContainerInstance, EventListener>>>()) {
-            Collections.synchronizedCollection(PriorityQueue(Comparator.comparingInt { (_, listener) ->
-                listener.priority
-            }))
-        }
-
-    constructor() : this({ it.printStackTrace() })
-
-    init {
-        subscribeAddContainerListener(ListenerResolver)
-    }
+    internal val attached: MutableMap<String, MutableCollection<Pair<Any, ListenerFunction>>> = Reference2ObjectOpenHashMap()
 
     /**
      * Call event listeners of the event.
@@ -44,17 +29,17 @@ class EventSystem(
      * @return true if event is canceled, false otherwise.
      */
     fun call(event: String, eventObject: Any?): Boolean {
-        val ls = attached[event]
+        val ls = attached[event] ?: return false
         val iterator = ls.iterator()
         val callback by lazy { ListenerCallback() }
         synchronized(ls) {
             while (iterator.hasNext()) {
                 val (instance, listener) = iterator.next()
                 try {
-                    if (listener.self.parameters.size == 1 + 1) {
-                        listener.self.invoke(instance, arrayOf(eventObject))
+                    if (listener.self.parameters.size == 2) {
+                        listener.self.call(instance, eventObject)
                     } else {
-                        listener.self.invoke(instance, arrayOf(eventObject, callback))
+                        listener.self.call(instance, eventObject, callback)
                         if (callback.requestDetach) {
                             iterator.remove()
                             callback.requestDetach = false
@@ -78,17 +63,17 @@ class EventSystem(
      * @return true if event is canceled, false otherwise.
      */
     fun call(event: String): Boolean {
-        val ls = attached[event]
+        val ls = attached[event] ?: return false
         val iterator = ls.iterator()
+        val callback by lazy { ListenerCallback() }
         synchronized(ls) {
-            val callback by lazy { ListenerCallback() }
             while (iterator.hasNext()) {
                 val (instance, listener) = iterator.next()
                 try {
                     if (listener.self.parameters.size == 1) {
-                        listener.self.invoke(instance, arrayOf())
+                        listener.self.call(instance)
                     } else {
-                        listener.self.invoke(instance, arrayOf(callback))
+                        listener.self.call(instance, callback)
                         if (callback.requestDetach) {
                             iterator.remove()
                             callback.requestDetach = false

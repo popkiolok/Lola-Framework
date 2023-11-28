@@ -1,8 +1,6 @@
 package com.lola.framework.core.kotlin.parametersresolving
 
-import com.lola.framework.core.function.parameter.Parameter
 import com.lola.framework.core.kotlin.KotlinParameter
-import com.lola.framework.core.kotlin.KotlinProperty
 import kotlin.reflect.KProperty
 
 /**

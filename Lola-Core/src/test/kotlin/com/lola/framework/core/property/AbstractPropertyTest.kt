@@ -1,10 +1,11 @@
 package com.lola.framework.core.property
 
-import com.lola.framework.core.Type
+import com.lola.framework.core.LType
 import com.lola.framework.core.annotation.AnnotationResolver
-import com.lola.framework.core.container.Container
+import com.lola.framework.core.LClass
 import com.lola.framework.core.container.ContainerInstance
-import com.lola.framework.core.function.parameter.Parameter
+import com.lola.framework.core.LParameter
+import com.lola.framework.core.impl.AbstractProperty
 import com.lola.framework.core.property.decorations.PropertyGetListener
 import com.lola.framework.core.property.decorations.PropertySetListener
 import com.lola.framework.core.util.Option
@@ -18,7 +19,7 @@ import org.mockito.kotlin.whenever
 class AbstractPropertyTest {
     private val mProperty = TestProperty(true)
     private val immProperty = TestProperty(false)
-    private val ci = ContainerInstance(mock<Container>()).also { it.instance = Any() }
+    private val ci = ContainerInstance(mock<LClass>()).also { it.instance = Any() }
 
     @Test
     fun `test get`() {
@@ -77,8 +78,8 @@ class AbstractPropertyTest {
 
     class TestProperty(override val mutable: Boolean) : AbstractProperty() {
         override val name: String = "testProperty"
-        override val type: Type = mock<Type>()
-        override val parameters: Collection<Parameter> = emptyList()
+        override val type: LType = mock<LType>()
+        override val parameters: Collection<LParameter> = emptyList()
 
         var value: Any? = "1"
 

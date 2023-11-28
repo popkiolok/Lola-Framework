@@ -1,6 +1,5 @@
 package com.lola.framework.core.kotlin
 
-import com.lola.framework.core.Element
 import org.reflections.Reflections
 import org.reflections.scanners.Scanners
 import org.reflections.util.ConfigurationBuilder
@@ -24,6 +23,6 @@ class LolaKotlin(vararg packages: Package) {
                 *Array(packages.size) { i -> packages[i].name }).setScanners(Scanners.SubTypes.filterResultsBy { true })
         )
         reflections.getSubTypesOf(Any::class.java)
-            .forEach { if (getKotlinContainer(it.kotlin) == null) runCatching { KotlinContainer(it.kotlin) } }
+            .forEach { if (getKotlinContainer(it.kotlin) == null) runCatching { LClassKotlin(it.kotlin) } }
     }
 }

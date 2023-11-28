@@ -4,10 +4,10 @@ import com.lola.framework.command.ParseResult
 import com.lola.framework.command.ParseResultSuccess
 import com.lola.framework.command.ParsingContext
 import com.lola.framework.command.SingletonArgumentParser
-import com.lola.framework.core.Type
+import com.lola.framework.core.LType
 
 open class ArgumentString : SingletonArgumentParser {
-    override fun canParse(type: Type) = type.clazz == String::class
+    override fun canParse(type: LType) = type.clazz == String::class
 
     override fun parse(pctx: ParsingContext): ParseResult {
         return parseAsString(pctx.argsLeft, pctx.isLast)

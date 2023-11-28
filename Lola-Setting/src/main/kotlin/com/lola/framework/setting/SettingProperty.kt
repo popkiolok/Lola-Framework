@@ -1,10 +1,10 @@
 package com.lola.framework.setting
 
-import com.lola.framework.core.property.Property
+import com.lola.framework.core.LProperty
 import com.lola.framework.core.property.PropertyDecoration
 
 class SettingProperty(
-    override val self: Property,
+    override val self: LProperty,
     /**
      * Setting simple name.
      */

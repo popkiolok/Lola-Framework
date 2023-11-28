@@ -1,6 +1,6 @@
 package com.lola.framework.core.container.navigation
 
-import com.lola.framework.core.container.Container
+import com.lola.framework.core.LClass
 import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.mockito.kotlin.mock
@@ -8,8 +8,8 @@ import org.mockito.kotlin.whenever
 import kotlin.test.Test
 
 class ContainerNavigatorByNameTest {
-    private val containers = listOf<Container>()
-    private val container = mock<Container>(name = "Container Under Test")
+    private val containers = listOf<LClass>()
+    private val container = mock<LClass>(name = "Container Under Test")
     private val navigator = ContainerNavigatorByName(containers)
 
     init {

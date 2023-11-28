@@ -1,19 +1,15 @@
 package com.lola.framework.module
 
-import com.lola.framework.core.Type
-import com.lola.framework.core.annotation.Annotated
+import com.lola.framework.core.LType
 import com.lola.framework.core.container.context.Context
+import com.lola.framework.core.decoration.Decorated
 import com.lola.framework.core.decoration.ValueSupplier
-import com.lola.framework.core.function.parameter.Parameter
-import com.lola.framework.core.function.parameter.decorations.ParameterValueSupplier
-import com.lola.framework.core.kotlin.getKotlinContainer
-import com.lola.framework.core.property.Property
-import com.lola.framework.core.property.decorations.PropertyValueSupplier
+import com.lola.framework.core.LParameter
+import com.lola.framework.core.LProperty
 
-abstract class Dependency<T : Annotated>(final override val self: T, valueType: Type) :
+abstract class Dependency<T : Decorated<*>>(final override val self: T, valueType: LType, ann: Dep) :
     ValueSupplier<T, Any?> {
-    private val module: ModuleContainer by lazy {
-        val ann = self.annotations.getAnnotation(Dep::class)
+    private val module: ModuleContainer<*> by lazy {
         if (ann.name.isEmpty()) {
             ModuleRegistry[valueType.clazz]
         } else ModuleRegistry[ann.name]
@@ -28,8 +24,6 @@ abstract class Dependency<T : Annotated>(final override val self: T, valueType: 
     }
 }
 
-class DependencyProperty(self: Property) : Dependency<Property>(self, self.type),
-    PropertyValueSupplier
+class DependencyProperty<T>(self: LProperty<T>, dep: Dep) : Dependency<LProperty<T>>(self, self.returnType, dep)
 
-class DependencyParameter(self: Parameter) : Dependency<Parameter>(self, self.type),
-    ParameterValueSupplier
+class DependencyParameter(self: LParameter, dep: Dep) : Dependency<LParameter>(self, self.type, dep)

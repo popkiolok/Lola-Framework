@@ -1,11 +1,11 @@
 package com.lola.framework.command
 
-import com.lola.framework.core.property.Property
+import com.lola.framework.core.LProperty
 import com.lola.framework.core.property.PropertyDecoration
 import com.lola.framework.core.toJSON
 import com.lola.framework.setting.setting
 
-class ArgumentProperty(override val self: Property, private val holder: ArgumentsContainer) : PropertyDecoration {
+class ArgumentProperty(override val self: LProperty, private val holder: ArgumentsContainer) : PropertyDecoration {
     val required: Boolean
         get() = !self.hasDefaultValue
     val parsers: MutableList<ArgumentParser> = ArrayList()

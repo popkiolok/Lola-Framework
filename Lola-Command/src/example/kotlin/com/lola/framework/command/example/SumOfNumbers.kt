@@ -2,8 +2,6 @@ package com.lola.framework.command.example
 
 import com.lola.framework.command.Command
 import com.lola.framework.command.CommandSystem
-import com.lola.framework.command.arguments.ArgumentBigDecimal
-import com.lola.framework.core.kotlin.KotlinContainer
 import com.lola.framework.core.kotlin.LolaKotlin
 import com.lola.framework.setting.Setting
 import java.math.BigDecimal

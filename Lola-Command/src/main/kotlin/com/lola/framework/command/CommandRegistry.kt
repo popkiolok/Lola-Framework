@@ -1,12 +1,12 @@
 package com.lola.framework.command
 
 import com.lola.framework.core.annotation.findAnnotation
-import com.lola.framework.core.container.AddContainerListener
-import com.lola.framework.core.container.Container
+import com.lola.framework.core.decoration.FoundClassListener
+import com.lola.framework.core.LClass
 import com.lola.framework.core.container.subscribeAddContainerListener
 import kotlin.reflect.full.isSubclassOf
 
-object CommandRegistry : AddContainerListener {
+object CommandRegistry : FoundClassListener {
     val parserFabrics: MutableList<ArgumentParserFabric<*>> = ArrayList()
     val commands: MutableList<CommandContainer> = ArrayList()
     val parserAddListeners: MutableList<ArgumentProperty> = ArrayList()
@@ -15,7 +15,7 @@ object CommandRegistry : AddContainerListener {
         subscribeAddContainerListener(this)
     }
 
-    override fun onContainerAdded(container: Container) {
+    override fun onClassFound(container: LClass) {
         if (container.clazz.isSubclassOf(ArgumentParserFabric::class) && !container.clazz.isAbstract && container.hasDefaultConstructor()) {
             val argParser = container.createInstance(emptyMap()).instance as ArgumentParserFabric<*>
             log.debug { "Found argument parser $argParser." }

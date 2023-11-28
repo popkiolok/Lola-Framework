@@ -1,12 +1,12 @@
 package com.lola.framework.command.arguments
 
 import com.lola.framework.command.*
-import com.lola.framework.core.Type
+import com.lola.framework.core.LType
 
 class ArgumentNull : ArgumentWord() {
     private val failureResult = ParseResultFailure { "Argument is not 'null', 'nil' or '-' " }
 
-    override fun canParse(type: Type) = type.nullable
+    override fun canParse(type: LType) = type.nullable
 
     override fun parse(pctx: ParsingContext): ParseResult {
         val (word, argLength) = super.parseAsString(pctx.argsLeft)
