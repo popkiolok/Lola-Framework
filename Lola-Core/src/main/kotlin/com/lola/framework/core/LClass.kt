@@ -1,80 +1,55 @@
 package com.lola.framework.core
 
-import com.lola.framework.core.decoration.Decorated
-import com.lola.framework.core.decoration.Decoration
 import com.lola.framework.core.context.Context
-import com.lola.framework.core.decoration.CreateInstanceListener
+import com.lola.framework.core.decoration.*
 import kotlin.reflect.KClass
+import kotlin.reflect.KMutableProperty
+import kotlin.reflect.KParameter
+import kotlin.reflect.KProperty
+import kotlin.reflect.full.memberFunctions
+import kotlin.reflect.full.memberProperties
 
-interface LClass<T : Any> : KClass<T>, Decorated {
-
+class LClass<T : Any> internal constructor(val kClass: KClass<T>) : Decorated() {
     /**
-     * Non-static properties and functions (excluding constructors) declared in this class and all it superclasses,
-     * externally added members. Superclasses members are before declared members in this collection.
+     * Class level context. Extends [Lola.context].
      */
-    override val members: Collection<LCallable<*>>
+    val context: Context = Context(mutableListOf(Lola.context))
 
     /**
-     * Non-static properties declared in this class and all it superclasses, externally added properties.
-     * Superclasses properties are before declared properties in this collection.
-     */
-    val memberProperties: Collection<LProperty<*>>
-
-    /**
-     * Non-static functions declared in this class and all it superclasses, externally added functions.
-     * Superclasses functions are before declared functions in this collection.
-     */
-    val memberFunctions: Collection<LFunction<*>>
-
-    override val constructors: Collection<LFunction<T>>
-
-    /**
-     * All currently found subclasses of this class, including non-direct ones.
-     */
-    val subclasses: Collection<LClass<out T>>
-
-    /**
-     * All superclasses of this class, including non-direct ones.
-     */
-    val superclasses: Collection<LClass<out T>>
-
-    override val nestedClasses: Collection<LClass<*>>
-
-    override val supertypes: List<LType>
-
-    override val sealedSubclasses: List<LClass<out T>>
-
-    /**
-     * Class level context. Extends [globalContext].
-     */
-    val context: Context
-
-    fun <T : Decoration<*>> hasDecoratedMembers(clazz: KClass<out T>): Boolean
-
-    fun <T : Decoration<*>> getDecoratedMembers(clazz: KClass<out T>): Sequence<T>
-
-    fun isSubclassOf(base: LClass<*>): Boolean
-
-    fun isSubclassOf(base: KClass<*>): Boolean
-
-    /**
-     * Creates new instance for this [LClass] using first constructor,
+     * Creates new instance for this [KClass] using first constructor,
      * which parameters can be completed with parameters from [params] and [initialize] it.
      *
      * @param params Map of parameters invoker can provide.
      * @param propertyValues Initial values of new class properties.
-     * If there are [LProperty.constructorParameters] for used constructor,
-     * they will be added to [params] and associated with values from this map.
      * @param ctxInitializer Callback to initialize context created for the new instance.
      * @return New instance object.
      * @throws NullPointerException If no constructor present for the given parameters.
-     * @throws NullPointerException If [objectInstance] is not null (for singleton object class).
+     * @throws NullPointerException If [KClass.objectInstance] is not null (for singleton object class).
      */
     fun createInstance(
-        params: Map<LParameter, Any?> = emptyMap(),
-        propertyValues: Map<LProperty<*>, Any?> = emptyMap(),
+        params: Map<KParameter, Any?> = emptyMap(),
+        propertyValues: Map<KProperty<*>, Any?> = emptyMap(),
         ctxInitializer: (Context) -> Unit = {}
-    ): T
+    ): T {
+        log.debug { "Creating instance of class '$this' with params: '${params.toJSON()}'." }
+        for (constructor in kClass.constructors) {
+            log.trace { "Trying to construct with constructor '$constructor'." }
+            if (params.size == constructor.parameters.size ||
+                constructor.parameters.all {
+                    it.isOptional || params.containsKey(it) ||
+                            it.lola.hasDecoration<ValueSupplier<*, *>>()
+                }
+            ) {
+                val instance = constructor.lola.callBy(context, params)
+                initialize(instance, propertyValues, ctxInitializer)
+                return instance
+            }
+        }
+        log.error { "An error occurred while constructing class '$this'." }
+        log.error { "No constructor applicable for parameters '${params.toJSON()}':" }
+        kClass.constructors.forEach { log.error { " - $it" } }
+        throw NullPointerException("No constructor present for the given parameters.")
+    }
 
     /**
      * Initialize existing [instance], map context to it and initialize properties
@@ -84,18 +59,64 @@ interface LClass<T : Any> : KClass<T>, Decorated {
      * @param propertyValues Values to initialize instance properties with.
      * @param ctxInitializer Callback to initialize context created for the instance.
      */
-    fun initialize(instance: T, propertyValues: Map<LProperty<*>, Any?>, ctxInitializer: (Context) -> Unit = {})
+    fun initialize(
+        instance: T,
+        propertyValues: Map<KProperty<*>, Any?>,
+        ctxInitializer: (Context) -> Unit = {}
+    ) {
+        val ctx = Context(mutableListOf(context))
+        ctx.register { ctx }
+        ctx.register<LClass<T>> { this }
+        ctxInitializer(ctx)
+        log.trace { "Created instance object '$instance'." }
+        instanceToContext[instance] = ctx
 
-    /**
-     * Adds a member to the class, invoking add member listeners present for this class.
-     *
-     * @param member Member to be added.
-     */
-    fun addMember(member: LCallable<*>)
+        log.trace { "Initializing properties for class '$this'." }
+        kClass.memberProperties.forEach { prop ->
+            if (propertyValues.containsKey(prop)) {
+                (prop as KMutableProperty<*>).setter.call(instance, propertyValues[prop])
+            } else {
+                prop.lola.getDecorations(ValueSupplier::class).forEach {
+                    val value = it.supplyValue(ctx)
+                    log.trace { "Initializing property '$prop' with value '$value'." }
+                    (prop as KMutableProperty<*>).setter.call(instance, value)
+                }
+            }
+        }
+        getDecorations<CreateInstanceListener<T>>().forEach { it.onCreateInstance(instance, context) }
+    }
 
-    fun hasDefaultConstructor(): Boolean
+    fun <T : Decoration<*>> hasDecoratedMembers(decoration: KClass<out T>): Boolean {
+        return kClass.members.any { it.lola.hasDecoration(decoration) }
+    }
+
+    fun <T : Decoration<*>> getDecoratedMembers(decoration: KClass<out T>): Sequence<T> {
+        return kClass.members.asSequence().mapNotNull { it.lola.getDecorations(decoration).firstOrNull() }
+    }
+
+    inline fun <reified T : Decoration<*>> hasDecoratedMembers(): Boolean = hasDecoratedMembers(T::class)
+
+    inline fun <reified T : Decoration<*>> getDecoratedMembers(): Sequence<T> = getDecoratedMembers(T::class)
+
+    @Suppress("UNCHECKED_CAST")
+    override fun <D : Decorated> decorate(decoration: Decoration<D>) {
+        super.decorate(decoration)
+        // Not 'when' because decoration can implement multiple interfaces
+        if (decoration is ResolveMemberListener<*>) kClass.members.forEach { decoration.onMemberFound(it.lola) }
+        if (decoration is ResolveMemberFunctionListener<*>) kClass.memberFunctions.forEach {
+            decoration.onFunctionFound(
+                it.lola
+            )
+        }
+        if (decoration is ResolveMemberPropertyListener<*>) kClass.memberProperties.forEach {
+            (decoration as ResolveMemberPropertyListener<T>).onPropertyFound(it.lola)
+        }
+        if (decoration is ResolveConstructorListener<*>) {
+            kClass.constructors.forEach { (decoration as ResolveConstructorListener<T>).onConstructorFound(it.lola) }
+        }
+    }
+
+    override fun toString(): String {
+        return kClass.toString()
+    }
 }
-
-inline fun <reified T : Decoration<*>> LClass<*>.hasDecoratedMembers(): Boolean = hasDecoratedMembers(T::class)
-
-inline fun <reified T : Decoration<*>> LClass<*>.getDecoratedMembers(): Sequence<T> = getDecoratedMembers(T::class)

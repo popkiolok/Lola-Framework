@@ -1,14 +1,14 @@
 package com.lola.framework.module
 
 import com.lola.framework.core.LClass
-import com.lola.framework.core.decoration.FoundClassListener
+import com.lola.framework.core.decoration.ResolveClassListener
 import com.lola.framework.core.container.subscribeAddContainerListener
 import com.lola.framework.core.kotlin.LClassKotlin
 import com.lola.framework.core.kotlin.getKotlinContainer
 import kotlin.reflect.KClass
 import kotlin.reflect.full.findAnnotation
 
-object ModuleRegistry : FoundClassListener {
+object ModuleRegistry : ResolveClassListener {
     /**
      * Modules associated by their [ModuleContainer.group]s.
      */

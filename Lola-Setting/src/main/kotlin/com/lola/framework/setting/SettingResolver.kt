@@ -1,10 +1,10 @@
 package com.lola.framework.setting
 
-import com.lola.framework.core.decoration.FoundClassListener
+import com.lola.framework.core.decoration.ResolveClassListener
 import com.lola.framework.core.LClass
 import com.lola.framework.core.container.subscribeAddContainerListener
 
-object SettingResolver : FoundClassListener {
+object SettingResolver : ResolveClassListener {
 
     init {
         subscribeAddContainerListener(this)

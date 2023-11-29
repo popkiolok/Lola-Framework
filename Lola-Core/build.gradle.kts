@@ -12,11 +12,13 @@ repositories {
 
 dependencies {
     implementation("io.github.oshai:kotlin-logging-jvm:5.+")
+    implementation("org.apache.logging.log4j:log4j-slf4j2-impl:2.+")
     implementation("org.slf4j:slf4j-api:2.+")
     implementation("org.jetbrains.kotlin:kotlin-reflect:1.+")
-    implementation("com.google.guava:guava:32.1.1-jre")
     implementation("it.unimi.dsi:fastutil:8.5.12")
+    implementation("com.google.guava:guava:32.1.1-jre")
     implementation("com.fasterxml.jackson.core:jackson-databind:2.+")
+    implementation("org.reflections:reflections:0.+")
 
     testImplementation(kotlin("test"))
     testImplementation("org.mockito.kotlin:mockito-kotlin:5.+")

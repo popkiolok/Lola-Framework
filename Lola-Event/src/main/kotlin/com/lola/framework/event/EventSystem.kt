@@ -36,10 +36,10 @@ class EventSystem(
             while (iterator.hasNext()) {
                 val (instance, listener) = iterator.next()
                 try {
-                    if (listener.self.parameters.size == 2) {
-                        listener.self.call(instance, eventObject)
+                    if (listener.target.parameters.size == 2) {
+                        listener.target.call(instance, eventObject)
                     } else {
-                        listener.self.call(instance, eventObject, callback)
+                        listener.target.call(instance, eventObject, callback)
                         if (callback.requestDetach) {
                             iterator.remove()
                             callback.requestDetach = false
@@ -70,10 +70,10 @@ class EventSystem(
             while (iterator.hasNext()) {
                 val (instance, listener) = iterator.next()
                 try {
-                    if (listener.self.parameters.size == 1) {
-                        listener.self.call(instance)
+                    if (listener.target.parameters.size == 1) {
+                        listener.target.call(instance)
                     } else {
-                        listener.self.call(instance, callback)
+                        listener.target.call(instance, callback)
                         if (callback.requestDetach) {
                             iterator.remove()
                             callback.requestDetach = false

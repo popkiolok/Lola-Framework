@@ -3,7 +3,7 @@ package com.lola.framework.command.arguments
 import com.lola.framework.command.*
 import com.lola.framework.core.LType
 import com.lola.framework.core.annotation.hasAnnotation
-import com.lola.framework.core.decoration.FoundClassListener
+import com.lola.framework.core.decoration.ResolveClassListener
 import com.lola.framework.core.LClass
 import com.lola.framework.core.container.ContainerInstance
 import com.lola.framework.core.container.context.Context
@@ -12,7 +12,7 @@ import com.lola.framework.core.decoration.getDecoration
 import com.lola.framework.core.decoration.hasDecoration
 import java.lang.IllegalArgumentException
 
-class OrderedArgumentSequenceFabric : ArgumentParserFabric<OrderedArgumentSequence>, FoundClassListener {
+class OrderedArgumentSequenceFabric : ArgumentParserFabric<OrderedArgumentSequence>, ResolveClassListener {
 
     init {
         subscribeAddContainerListener(this)

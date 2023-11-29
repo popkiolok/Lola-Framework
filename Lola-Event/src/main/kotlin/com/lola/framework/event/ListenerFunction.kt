@@ -8,4 +8,4 @@ import com.lola.framework.core.LFunction
  * Function that listens for event calls.
  */
 @ForAnnotated(Listener::class)
-class ListenerFunction(override val self: LFunction<Unit>, val info: Listener) : Decoration<LFunction<Unit>>
+class ListenerFunction(override val target: LFunction<Unit>, val info: Listener) : Decoration<LFunction<Unit>>

@@ -1,4 +1,4 @@
-package com.lola.framework.core
+package com.lola.framework.core.util
 
 /**
  * Represents a path consisting of nodes.

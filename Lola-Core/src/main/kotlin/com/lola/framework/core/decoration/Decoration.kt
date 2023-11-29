@@ -8,5 +8,5 @@ interface Decoration<T : Decorated> {
     /**
      * The container or component this decoration is applied to.
      */
-    val self: T
+    val target: T
 }

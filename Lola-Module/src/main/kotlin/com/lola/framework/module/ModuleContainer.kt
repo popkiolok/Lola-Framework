@@ -1,7 +1,7 @@
 package com.lola.framework.module
 
 import com.lola.framework.core.decoration.ForAnnotated
-import com.lola.framework.core.Path
+import com.lola.framework.core.util.Path
 import com.lola.framework.core.LClass
 import com.lola.framework.core.container.ContainerDecoration
 

@@ -7,7 +7,7 @@ import com.lola.framework.core.decoration.ValueSupplier
 import com.lola.framework.core.LParameter
 import com.lola.framework.core.LProperty
 
-abstract class Dependency<T : Decorated<*>>(final override val self: T, valueType: LType, ann: Dep) :
+abstract class Dependency<T : Decorated<*>>(final override val target: T, valueType: LType, ann: Dep) :
     ValueSupplier<T, Any?> {
     private val module: ModuleContainer<*> by lazy {
         if (ann.name.isEmpty()) {
@@ -18,7 +18,7 @@ abstract class Dependency<T : Decorated<*>>(final override val self: T, valueTyp
     override fun supplyValue(context: Context): Result<Any?> {
         return runCatching { (context[ModuleInstanceStorage::class] as ModuleInstanceStorage).load(module).instance }
             .onFailure {
-                log.error { "An error occurred while supplying dependency for '$self': '${it.message}'." }
+                log.error { "An error occurred while supplying dependency for '$target': '${it.message}'." }
                 it.printStackTrace()
             }
     }

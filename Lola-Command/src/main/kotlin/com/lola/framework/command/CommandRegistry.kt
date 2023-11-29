@@ -1,12 +1,12 @@
 package com.lola.framework.command
 
 import com.lola.framework.core.annotation.findAnnotation
-import com.lola.framework.core.decoration.FoundClassListener
+import com.lola.framework.core.decoration.ResolveClassListener
 import com.lola.framework.core.LClass
 import com.lola.framework.core.container.subscribeAddContainerListener
 import kotlin.reflect.full.isSubclassOf
 
-object CommandRegistry : FoundClassListener {
+object CommandRegistry : ResolveClassListener {
     val parserFabrics: MutableList<ArgumentParserFabric<*>> = ArrayList()
     val commands: MutableList<CommandContainer> = ArrayList()
     val parserAddListeners: MutableList<ArgumentProperty> = ArrayList()

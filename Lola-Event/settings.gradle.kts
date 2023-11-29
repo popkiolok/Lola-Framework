@@ -12,7 +12,5 @@ plugins {
 rootProject.name = "Lola-Event"
 
 includeBuild("../Lola-Core")
-includeBuild("../Lola-Core-Kotlin")
-
 includeBuild("../Lola-Module")
 includeBuild("../Lola-Setting")

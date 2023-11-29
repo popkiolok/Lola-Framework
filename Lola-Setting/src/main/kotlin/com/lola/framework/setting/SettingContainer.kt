@@ -6,6 +6,8 @@ import com.lola.framework.core.container.*
 import com.lola.framework.core.container.decorations.AddPropertyListener
 import com.lola.framework.core.LParameter
 import com.lola.framework.core.LProperty
+import com.lola.framework.core.util.Path
+import com.lola.framework.core.util.emptyPath
 
 /**
  * Registers [SettingProperty]s for container and provides access to their values.

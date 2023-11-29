@@ -4,13 +4,14 @@ import com.lola.framework.core.LParameter
 import com.lola.framework.core.decoration.Decorated
 import com.lola.framework.core.decoration.ForAnnotated
 import com.lola.framework.core.decoration.ValueSupplier
+import kotlin.reflect.jvm.jvmErasure
 
 @ForAnnotated(Auto::class)
-class AutoReference(override val self: LParameter, ann: Auto) : ValueSupplier<Decorated, Any?> {
+class AutoReference(override val target: LParameter, ann: Auto) : ValueSupplier<Decorated, Any?> {
     private val key: Any
 
     init {
-        key = ann.stringKey.ifEmpty { self.type.clazz }
+        key = ann.stringKey.ifEmpty { target.kParameter.type.jvmErasure }
     }
 
     override fun supplyValue(context: Context): Any? {

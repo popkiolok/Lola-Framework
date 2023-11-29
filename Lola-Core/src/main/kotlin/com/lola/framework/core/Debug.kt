@@ -8,11 +8,15 @@ import com.fasterxml.jackson.databind.SerializerProvider
 import com.fasterxml.jackson.databind.ser.PropertyWriter
 import com.fasterxml.jackson.databind.ser.impl.SimpleBeanPropertyFilter
 import com.fasterxml.jackson.databind.ser.impl.SimpleFilterProvider
+import com.lola.framework.core.context.Auto
+import com.lola.framework.core.context.AutoReference
+import com.lola.framework.core.context.Context
+import com.lola.framework.core.decoration.DefaultDecorator
 import io.github.oshai.kotlinlogging.KotlinLogging
 
 
 var limit = 2000
-var depth = 1
+var depth = 2
 
 private val mockitoRegex = Regex("\\\$MockitoMock\\\$.+")
 
@@ -90,3 +94,17 @@ fun Any?.toJSON(): String {
 }
 
 internal val log = KotlinLogging.logger("Lola-Core")
+
+fun main() {
+    Lola.initialize()
+    Test::class.lola.let {
+        it.context.register { "Hello, World!" }
+        it.createInstance()
+    }
+}
+
+class Test(@Auto hello: String) {
+    init {
+        println(hello)
+    }
+}
