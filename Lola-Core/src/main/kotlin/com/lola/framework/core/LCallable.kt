@@ -8,8 +8,17 @@ import kotlin.reflect.KCallable
 import kotlin.reflect.KParameter
 import com.lola.framework.core.decoration.ValueSupplier
 import kotlin.reflect.KClass
+import kotlin.reflect.KFunction
+import kotlin.reflect.full.extensionReceiverParameter
+import kotlin.reflect.full.instanceParameter
 
-class LCallable<R, T : KCallable<R>>(val kCallable: T) : Decorated() {
+class LCallable<R, T : KCallable<R>>(
+    val kCallable: T,
+    /**
+     * Holder of the [LCallable]. [LClass] for callables in class (even static) and [Lola] for non-class callables.
+     */
+    private val holder: Decorated
+) : Decorated() {
     /**
      * Calls this function in [context] with the specified mapping of parameters to arguments and returns the result.
      * If a parameter is not found in the mapping, is not optional (as per [KParameter.isOptional])
@@ -40,4 +49,31 @@ class LCallable<R, T : KCallable<R>>(val kCallable: T) : Decorated() {
     inline fun <reified T : Decoration<*>> hasDecoratedParameters(): Boolean = hasDecoratedParameters(T::class)
 
     inline fun <reified T : Decoration<*>> getDecoratedParameters(): Sequence<T> = getDecoratedParameters(T::class)
+
+    @Suppress("UNCHECKED_CAST")
+    override fun <T : Decorated> decorate(decoration: Decoration<T>) {
+        super.decorate(decoration)
+        if (holder is LClass<*>) {
+            if (holder.kClass.members.contains(kCallable)) {
+                holder.onDecoratedMember(
+                    this as LCallable<*, KCallable<*>>,
+                    decoration as Decoration<LCallable<*, KCallable<*>>>
+                )
+            } else if (kCallable is KFunction<*> && holder.kClass.constructors.contains(kCallable)) {
+                onDecoratedConstructor(holder, decoration)
+            }
+        }
+    }
+
+    @Suppress("UNCHECKED_CAST")
+    private fun <T : Decorated, P : Any> onDecoratedConstructor(holder: LClass<P>, decoration: Decoration<T>) {
+        holder.onDecoratedConstructor(
+            this as LCallable<P, KFunction<P>>,
+            decoration as Decoration<LCallable<P, KFunction<P>>>
+        )
+    }
+
+    override fun toString(): String {
+        return kCallable.toString()
+    }
 }

@@ -16,6 +16,43 @@ interface ResolveClassListener : Decoration<Lola> {
 
 /**
  * Makes decoration listening for resolving class constructors.
+ * When [ResolveClassConstructorListener] decoration applied to [Lola],
+ * [onClassConstructorFound] will be called for every existing constructor in every found class.
+ */
+interface ResolveClassConstructorListener : Decoration<Lola> {
+    fun <T : Any> onClassConstructorFound(clazz: LClass<T>, constructor: LCallable<T, KFunction<T>>)
+}
+
+
+/**
+ * Makes decoration listening for resolving class members (excluding constructors).
+ * When [ResolveClassMemberListener] decoration applied to [Lola],
+ * [onClassMemberFound] will be called for every existing member in every found class.
+ */
+interface ResolveClassMemberListener : Decoration<Lola> {
+    fun <T : Any> onClassMemberFound(clazz: LClass<T>, member: LCallable<*, *>)
+}
+
+/**
+ * Makes decoration listening for resolving class properties.
+ * When [ResolveClassMemberPropertyListener] decoration applied to [Lola],
+ * [onClassPropertyFound] will be called for every existing property in every found class.
+ */
+interface ResolveClassMemberPropertyListener : Decoration<Lola> {
+    fun <T : Any> onClassPropertyFound(clazz: LClass<T>, property: LCallable<*, KProperty1<T, *>>)
+}
+/**
+ * Makes decoration listening for resolving class functions (excluding constructors and property accessors).
+ * When [ResolveClassMemberFunctionListener] decoration applied to [Lola],
+ * [onClassFunctionFound] will be called for every existing function in every found class.
+ */
+interface ResolveClassMemberFunctionListener : Decoration<Lola> {
+    fun <T : Any> onClassFunctionFound(clazz: LClass<T>, function: LCallable<*, KFunction<*>>)
+}
+
+
+/**
+ * Makes decoration listening for resolving class constructors.
  * When [ResolveConstructorListener] decoration applied to class,
  * [onConstructorFound] will be called for every existing constructor in it.
  */

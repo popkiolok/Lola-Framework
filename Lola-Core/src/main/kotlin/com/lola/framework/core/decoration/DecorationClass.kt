@@ -49,10 +49,10 @@ class DecorationClass<T : Decoration<*>>(override val target: LClass<T>) : Decor
         }
     }
 
-    fun onDecoratedMember(member: LCallable<*, *>, decoration: Decoration<*>) {
+    fun onDecoratedMember(clazz: LClass<*>, decoration: Decoration<*>) {
         forHavingDecoratedMembers?.let { ann ->
             if (decoration::class == ann.decoration) {
-                member.decorate(makeInstance(member))
+                clazz.decorate(makeInstance(clazz))
             }
         }
     }

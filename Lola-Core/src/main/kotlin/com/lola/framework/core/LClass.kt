@@ -2,14 +2,12 @@ package com.lola.framework.core
 
 import com.lola.framework.core.context.Context
 import com.lola.framework.core.decoration.*
-import kotlin.reflect.KClass
-import kotlin.reflect.KMutableProperty
-import kotlin.reflect.KParameter
-import kotlin.reflect.KProperty
+import kotlin.reflect.*
 import kotlin.reflect.full.memberFunctions
 import kotlin.reflect.full.memberProperties
 
-class LClass<T : Any> internal constructor(val kClass: KClass<T>) : Decorated() {
+class LClass<T : Any> internal constructor(val kClass: KClass<T>) : Decorated(), DecorateConstructorListener<T>,
+    DecorateMemberListener<T> {
     /**
      * Class level context. Extends [Lola.context].
      */
@@ -104,9 +102,7 @@ class LClass<T : Any> internal constructor(val kClass: KClass<T>) : Decorated() 
         // Not 'when' because decoration can implement multiple interfaces
         if (decoration is ResolveMemberListener<*>) kClass.members.forEach { decoration.onMemberFound(it.lola) }
         if (decoration is ResolveMemberFunctionListener<*>) kClass.memberFunctions.forEach {
-            decoration.onFunctionFound(
-                it.lola
-            )
+            decoration.onFunctionFound(it.lola)
         }
         if (decoration is ResolveMemberPropertyListener<*>) kClass.memberProperties.forEach {
             (decoration as ResolveMemberPropertyListener<T>).onPropertyFound(it.lola)
@@ -116,7 +112,26 @@ class LClass<T : Any> internal constructor(val kClass: KClass<T>) : Decorated() 
         }
     }
 
+    override fun onDecoratedConstructor(
+        constructor: LCallable<T, KFunction<T>>,
+        decoration: Decoration<LCallable<T, KFunction<T>>>
+    ) {
+        getDecorations<DecorateConstructorListener<T>>().forEach { it.onDecoratedConstructor(constructor, decoration) }
+        Lola.onDecoratedClassConstructor(this, constructor, decoration)
+    }
+
+    override fun onDecoratedMember(
+        member: LCallable<*, KCallable<*>>,
+        decoration: Decoration<LCallable<*, KCallable<*>>>
+    ) {
+        getDecorations<DecorateMemberListener<T>>().forEach { it.onDecoratedMember(member, decoration) }
+        Lola.onDecoratedClassMember(this, member, decoration)
+    }
+
     override fun toString(): String {
         return kClass.toString()
     }
+
+    override val target: LClass<T>
+        get() = this
 }

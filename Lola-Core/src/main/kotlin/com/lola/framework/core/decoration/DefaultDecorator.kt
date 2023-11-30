@@ -4,13 +4,15 @@ import com.lola.framework.core.LCallable
 import com.lola.framework.core.LClass
 import com.lola.framework.core.Lola
 import com.lola.framework.core.lola
+import kotlin.reflect.KCallable
 import kotlin.reflect.KFunction
 import kotlin.reflect.full.isSubclassOf
 
 /**
  * Process annotations [ForAnnotated], [ForSubclasses] etc.
  */
-class DefaultDecorator(override val target: Lola) : ResolveClassListener {
+class DefaultDecorator(override val target: Lola) : ResolveClassListener, ResolveClassConstructorListener,
+    ResolveClassMemberListener, DecorateClassConstructorListener, DecorateClassMemberListener {
     @Suppress("UNCHECKED_CAST")
     override fun onClassFound(clazz: LClass<*>) {
         if (clazz.kClass.isSubclassOf(Decoration::class) &&
@@ -18,38 +20,44 @@ class DefaultDecorator(override val target: Lola) : ResolveClassListener {
         ) {
             clazz.decorate(DecorationClass(clazz as LClass<out Decoration<*>>))
         }
-        clazz.decorate(ClassMembersDecorator(clazz))
+        Lola.getDecoratedClasses<DecorationClass<*>>().forEach { it.process(clazz) }
     }
 
-    class ClassMembersDecorator<T : Any>(override val target: LClass<T>) : ResolveConstructorListener<T>,
-        ResolveMemberListener<T> {
-        init {
-            Lola.getDecoratedClasses<DecorationClass<*>>().forEach { it.process(target) }
-        }
-
-        override fun onConstructorFound(constructor: LCallable<T, KFunction<T>>) {
-            constructor.decorate(ParametersDecorator(constructor))
-        }
-
-        override fun onMemberFound(member: LCallable<*, *>) {
-            member.decorate(ParametersDecorator(member))
+    override fun <T : Any> onClassConstructorFound(clazz: LClass<T>, constructor: LCallable<T, KFunction<T>>) {
+        Lola.getDecoratedClasses<DecorationClass<*>>().forEach {
+            it.process(constructor)
+            constructor.kCallable.parameters.forEach { param ->
+                it.process(param.lola)
+            }
         }
     }
 
-    class ParametersDecorator<T>(override val target: LCallable<T, *>) : DecorateListener<LCallable<T, *>> {
-        init {
-            Lola.getDecoratedClasses<DecorationClass<*>>().forEach {
-                it.process(target)
-                target.kCallable.parameters.forEach { param ->
-                    it.process(param.lola)
-                }
+    override fun <T : Any> onClassMemberFound(clazz: LClass<T>, member: LCallable<*, *>) {
+        Lola.getDecoratedClasses<DecorationClass<*>>().forEach {
+            it.process(member)
+            member.kCallable.parameters.forEach { param ->
+                it.process(param.lola)
             }
         }
+    }
 
-        override fun onDecorated(decoration: Decoration<LCallable<T, *>>) {
-            Lola.getDecoratedClasses<DecorationClass<*>>().forEach {
-                it.onDecoratedMember(target, decoration)
-            }
+    override fun <T : Any> onDecoratedClassConstructor(
+        clazz: LClass<T>,
+        constructor: LCallable<T, KFunction<T>>,
+        decoration: Decoration<LCallable<T, KFunction<T>>>
+    ) {
+        Lola.getDecoratedClasses<DecorationClass<*>>().forEach {
+            it.onDecoratedMember(clazz, decoration)
+        }
+    }
+
+    override fun <T : Any> onDecoratedClassMember(
+        clazz: LClass<T>,
+        member: LCallable<*, KCallable<*>>,
+        decoration: Decoration<LCallable<*, KCallable<*>>>
+    ) {
+        Lola.getDecoratedClasses<DecorationClass<*>>().forEach {
+            it.onDecoratedMember(clazz, decoration)
         }
     }
 }

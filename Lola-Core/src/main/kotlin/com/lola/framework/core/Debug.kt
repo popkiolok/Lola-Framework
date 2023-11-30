@@ -82,15 +82,23 @@ private val mapper = ObjectMapper().also {
  * If object is null, the result is string "null".
  * This method only should be used as better [toString] for debug.
  */
-fun Any?.toJSON(): String {
-    return this?.let {
+@Synchronized
+fun Any?.toJSON(limit0: Int = limit, depth0: Int = depth): String {
+    val prevLim = limit
+    val prevDepth = depth
+    limit = limit0
+    depth = depth0
+    return (this?.let {
         val json = mapper.writeValueAsString(it)
         val shorted = json.substring(0, limit.coerceAtMost(json.length))
         val jsonStr = if (shorted.length < json.length) "$shorted..." else shorted
         val className = this::class.simpleName?.replace(mockitoRegex, "*") ?: "..."
 
         "[$className] $jsonStr"
-    } ?: "null"
+    } ?: "null").also {
+        limit = prevLim
+        depth = prevDepth
+    }
 }
 
 internal val log = KotlinLogging.logger("Lola-Core")
