@@ -1,7 +1,7 @@
 package com.lola.framework.module
 
 /**
- * Marks function as [OnUnloadFunction].
+ * Annotate function that should be called on module unloading (for example, to free resources).
  */
 @Target(AnnotationTarget.FUNCTION)
 @Retention(AnnotationRetention.RUNTIME)

@@ -3,4 +3,4 @@ package com.lola.framework.core
 import com.lola.framework.core.decoration.Decorated
 import kotlin.reflect.KParameter
 
-class LParameter(val kParameter: KParameter) : Decorated()
+class LParameter(override val self: KParameter, val holder: LCallable<*, *>) : LAnnotatedElement()

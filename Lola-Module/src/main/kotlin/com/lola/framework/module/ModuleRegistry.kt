@@ -1,14 +1,16 @@
 package com.lola.framework.module
 
 import com.lola.framework.core.LClass
-import com.lola.framework.core.decoration.ResolveClassListener
+import com.lola.framework.core.Lola
 import com.lola.framework.core.container.subscribeAddContainerListener
+import com.lola.framework.core.decoration.DecorateClassListener
+import com.lola.framework.core.decoration.Decoration
 import com.lola.framework.core.kotlin.LClassKotlin
 import com.lola.framework.core.kotlin.getKotlinContainer
 import kotlin.reflect.KClass
 import kotlin.reflect.full.findAnnotation
 
-object ModuleRegistry : ResolveClassListener {
+class ModuleRegistry(override val target: Lola) : DecorateClassListener {
     /**
      * Modules associated by their [ModuleContainer.group]s.
      */
@@ -34,6 +36,10 @@ object ModuleRegistry : ResolveClassListener {
 
     operator fun <T : Any> get(clazz: KClass<T>): ModuleContainer<T> {
         return (getKotlinContainer(clazz) ?: LClassKotlin(clazz)).asModule
+    }
+
+    override fun <T : Any> onDecoratedClass(clazz: LClass<T>, decoration: Decoration<LClass<T>>) {
+        TODO("Not yet implemented")
     }
 
     override fun onClassFound(clazz: LClass<*>) {

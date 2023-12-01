@@ -1,21 +1,11 @@
 package com.lola.framework.module
 
 import com.lola.framework.core.decoration.ForAnnotated
-import com.lola.framework.core.util.Path
 import com.lola.framework.core.LClass
-import com.lola.framework.core.container.ContainerDecoration
+import com.lola.framework.core.decoration.Decoration
 
 @ForAnnotated(Module::class)
-class ModuleContainer<T : Any>(override val self: LClass<T>, ann: Module) : ContainerDecoration {
+class ModuleContainer<T : Any>(override val target: LClass<T>, val data: Module) : Decoration<LClass<T>> {
     val group: String
-    val path: Path<String>
-    val name: String
-    val info: String
-
-    init {
-        group = ann.group
-        path = Path(ann.path.split('.'))
-        name = "$group:$path"
-        info = ann.info
-    }
+        get() = data.name.substringBefore(':')
 }

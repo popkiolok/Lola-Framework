@@ -9,7 +9,7 @@ import kotlin.reflect.full.isSubclassOf
 /**
  * Allows extending class or callable behavior by adding decorations to it.
  */
-open class Decorated {
+abstract class Decorated {
     /**
      * Decorations, associated by their classes and all superclasses, which are subclasses of [Decoration].
      */
@@ -36,6 +36,12 @@ open class Decorated {
             }
         }
         getDecorations<DecorateListener<T>>().forEach { it.onDecorated(decoration) }
+    }
+
+    inline fun <reified T : Decoration<*>> decorateIfAbsent(decoration: () -> T) {
+        if (!hasDecoration<T>()) {
+            decorate(decoration())
+        }
     }
 
     /**

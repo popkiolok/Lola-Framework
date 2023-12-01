@@ -10,6 +10,10 @@ import kotlin.reflect.cast
 class Context(val parents: MutableCollection<Context> = ArrayList()) {
     private val suppliers: MutableMap<Any, () -> Any?> = HashMap()
 
+    init {
+        register { this }
+    }
+
     /**
      * Register context value supplier for specified keys.
      *
@@ -60,4 +64,10 @@ class Context(val parents: MutableCollection<Context> = ArrayList()) {
     inline fun <reified T : Any> get(): T? {
         return get(T::class)
     }
+
+    operator fun set(vararg key: Any, value: Any?) {
+        register(*key) { value }
+    }
+
+    fun child(): Context = Context(mutableListOf(this))
 }

@@ -13,7 +13,6 @@ repositories {
 
 dependencies {
     implementation("com.lola.framework:Lola-Core:1.0-SNAPSHOT")
-    implementation("com.lola.framework:Lola-Core-Kotlin:1.0-SNAPSHOT")
 
     implementation("org.jetbrains.kotlin:kotlin-reflect:1.+")
     implementation("io.github.oshai:kotlin-logging-jvm:5.+")

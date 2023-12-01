@@ -6,6 +6,10 @@ import com.lola.framework.core.Lola
 import kotlin.reflect.KCallable
 import kotlin.reflect.KFunction
 
+interface DecorateClassListener : Decoration<Lola> {
+    fun <T : Any> onDecoratedClass(clazz: LClass<T>, decoration: Decoration<LClass<T>>)
+}
+
 interface DecorateClassConstructorListener : Decoration<Lola> {
     fun <T : Any> onDecoratedClassConstructor(
         clazz: LClass<T>,
@@ -14,7 +18,7 @@ interface DecorateClassConstructorListener : Decoration<Lola> {
     )
 }
 
-interface DecorateClassMemberListener : Decoration<Lola> {
+interface DecorateClassMemberListener<T : Decorated> : Decoration<T> {
     fun <T : Any> onDecoratedClassMember(
         clazz: LClass<T>,
         member: LCallable<*, KCallable<*>>,

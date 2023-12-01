@@ -35,7 +35,9 @@ object Lola : Decorated(), DecorateClassConstructorListener, DecorateClassMember
         reflections.getSubTypesOf(Any::class.java).forEach {
             runCatching { it.kotlin.lola }.onFailure { it.printStackTrace() }
         }
-        decorate(DefaultDecorator(this))
+        ForAnnotatedDecorator::class.lola.let {
+            it.decorate(ForAnnotatedDecorator(it, ForAnnotated(ForAnnotated::class)))
+        }
     }
 
     fun <T : Decoration<*>> hasDecoratedClasses(decoration: KClass<T>): Boolean {
@@ -53,29 +55,29 @@ object Lola : Decorated(), DecorateClassConstructorListener, DecorateClassMember
     override fun <T : Decorated> decorate(decoration: Decoration<T>) {
         super.decorate(decoration)
         // Not 'when' because decoration can implement multiple interfaces
-        if (decoration is ResolveClassListener) {
-            classes.values.forEach { decoration.onClassFound(it) }
+        if (decoration is ResolveClassAnywhereListener) {
+            classes.values.forEach { decoration.onClassFoundAnywhere(it) }
         }
-        if (decoration is ResolveClassMemberListener)
+        if (decoration is ResolveMemberCallableAnywhereListener)
             classes.values.forEach { clazz ->
-                clazz.kClass.members.forEach { decoration.onClassMemberFound(clazz, it.lola) }
+                clazz.self.members.forEach { decoration.onMemberCallableFoundAnywhere(clazz, it.lola) }
             }
-        if (decoration is ResolveClassMemberFunctionListener)
+        if (decoration is ResolveMemberFunctionAnywhereListener)
             classes.values.forEach { clazz ->
-                clazz.kClass.memberFunctions.forEach { decoration.onClassFunctionFound(clazz, it.lola) }
+                clazz.self.memberFunctions.forEach { decoration.onMemberFunctionFoundAnywhere(clazz, it.lola) }
             }
-        if (decoration is ResolveClassMemberPropertyListener)
+        if (decoration is ResolveMemberPropertyAnywhereListener)
             classes.values.forEach { clazz -> onClassPropertyFound(clazz, decoration) }
-        if (decoration is ResolveClassConstructorListener)
+        if (decoration is ResolveConstructorAnywhereListener)
             classes.values.forEach { clazz -> onClassConstructorFound(clazz, decoration) }
     }
 
-    private fun <T : Any> onClassPropertyFound(clazz: LClass<T>, decoration: ResolveClassMemberPropertyListener) {
-        clazz.kClass.memberProperties.forEach { decoration.onClassPropertyFound(clazz, it.lola) }
+    private fun <T : Any> onClassPropertyFound(clazz: LClass<T>, decoration: ResolveMemberPropertyAnywhereListener) {
+        clazz.self.memberProperties.forEach { decoration.onMemberPropertyFoundAnywhere(clazz, it.lola) }
     }
 
-    private fun <T : Any> onClassConstructorFound(clazz: LClass<T>, decoration: ResolveClassConstructorListener) {
-        clazz.kClass.constructors.forEach { decoration.onClassConstructorFound(clazz, it.lola) }
+    private fun <T : Any> onClassConstructorFound(clazz: LClass<T>, decoration: ResolveConstructorAnywhereListener) {
+        clazz.self.constructors.forEach { decoration.onConstructorFoundAnywhere(clazz, it.lola) }
     }
 
     override fun <T : Any> onDecoratedClassConstructor(

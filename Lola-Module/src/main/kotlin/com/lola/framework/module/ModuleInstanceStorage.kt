@@ -1,8 +1,7 @@
 package com.lola.framework.module
 
 import com.lola.framework.core.LClass
-import com.lola.framework.core.container.ContainerInstance
-import com.lola.framework.core.container.context.Context
+import com.lola.framework.core.context.Context
 import com.lola.framework.core.decoration.hasDecoration
 import com.lola.framework.core.LParameter
 import com.lola.framework.core.kotlin.lola

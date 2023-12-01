@@ -6,12 +6,13 @@ import kotlin.reflect.*
 import kotlin.reflect.full.memberFunctions
 import kotlin.reflect.full.memberProperties
 
-class LClass<T : Any> internal constructor(val kClass: KClass<T>) : Decorated(), DecorateConstructorListener<T>,
+class LClass<T : Any> internal constructor(override val self: KClass<T>) : LAnnotatedElement(),
+    DecorateConstructorListener<T>,
     DecorateMemberListener<T> {
     /**
      * Class level context. Extends [Lola.context].
      */
-    val context: Context = Context(mutableListOf(Lola.context))
+    val context: Context = Lola.context.child().also { it.register<LClass<T>> { this } }
 
     /**
      * Creates new instance for this [KClass] using first constructor,
@@ -30,22 +31,25 @@ class LClass<T : Any> internal constructor(val kClass: KClass<T>) : Decorated(),
         ctxInitializer: (Context) -> Unit = {}
     ): T {
         log.debug { "Creating instance of class '$this' with params: '${params.toJSON()}'." }
-        for (constructor in kClass.constructors) {
-            log.trace { "Trying to construct with constructor '$constructor'." }
+        for (constructor in self.constructors) {
             if (params.size == constructor.parameters.size ||
                 constructor.parameters.all {
                     it.isOptional || params.containsKey(it) ||
                             it.lola.hasDecoration<ValueSupplier<*, *>>()
                 }
             ) {
-                val instance = constructor.lola.callBy(context, params)
-                initialize(instance, propertyValues, ctxInitializer)
+                log.trace { "Constructing with constructor '$constructor'." }
+                val ctx = context.child()
+                ctxInitializer(ctx)
+                val instance = constructor.lola.callBy(ctx, params)
+                log.trace { "Created instance object '$instance'." }
+                initialize(instance, propertyValues, ctx)
                 return instance
             }
         }
         log.error { "An error occurred while constructing class '$this'." }
         log.error { "No constructor applicable for parameters '${params.toJSON()}':" }
-        kClass.constructors.forEach { log.error { " - $it" } }
+        self.constructors.forEach { log.error { " - $it" } }
         throw NullPointerException("No constructor present for the given parameters.")
     }
 
@@ -62,15 +66,20 @@ class LClass<T : Any> internal constructor(val kClass: KClass<T>) : Decorated(),
         propertyValues: Map<KProperty<*>, Any?>,
         ctxInitializer: (Context) -> Unit = {}
     ) {
-        val ctx = Context(mutableListOf(context))
-        ctx.register { ctx }
-        ctx.register<LClass<T>> { this }
+        val ctx = context.child()
         ctxInitializer(ctx)
-        log.trace { "Created instance object '$instance'." }
+        initialize(instance, propertyValues, ctx)
+    }
+
+    private fun initialize(
+        instance: T,
+        propertyValues: Map<KProperty<*>, Any?>,
+        ctx: Context
+    ) {
         instanceToContext[instance] = ctx
 
         log.trace { "Initializing properties for class '$this'." }
-        kClass.memberProperties.forEach { prop ->
+        self.memberProperties.forEach { prop ->
             if (propertyValues.containsKey(prop)) {
                 (prop as KMutableProperty<*>).setter.call(instance, propertyValues[prop])
             } else {
@@ -85,11 +94,11 @@ class LClass<T : Any> internal constructor(val kClass: KClass<T>) : Decorated(),
     }
 
     fun <T : Decoration<*>> hasDecoratedMembers(decoration: KClass<out T>): Boolean {
-        return kClass.members.any { it.lola.hasDecoration(decoration) }
+        return self.members.any { it.lola.hasDecoration(decoration) }
     }
 
     fun <T : Decoration<*>> getDecoratedMembers(decoration: KClass<out T>): Sequence<T> {
-        return kClass.members.asSequence().mapNotNull { it.lola.getDecorations(decoration).firstOrNull() }
+        return self.members.asSequence().mapNotNull { it.lola.getDecorations(decoration).firstOrNull() }
     }
 
     inline fun <reified T : Decoration<*>> hasDecoratedMembers(): Boolean = hasDecoratedMembers(T::class)
@@ -100,15 +109,15 @@ class LClass<T : Any> internal constructor(val kClass: KClass<T>) : Decorated(),
     override fun <D : Decorated> decorate(decoration: Decoration<D>) {
         super.decorate(decoration)
         // Not 'when' because decoration can implement multiple interfaces
-        if (decoration is ResolveMemberListener<*>) kClass.members.forEach { decoration.onMemberFound(it.lola) }
-        if (decoration is ResolveMemberFunctionListener<*>) kClass.memberFunctions.forEach {
+        if (decoration is ResolveMemberListener<*>) self.members.forEach { decoration.onMemberFound(it.lola) }
+        if (decoration is ResolveMemberFunctionListener<*>) self.memberFunctions.forEach {
             decoration.onFunctionFound(it.lola)
         }
-        if (decoration is ResolveMemberPropertyListener<*>) kClass.memberProperties.forEach {
+        if (decoration is ResolveMemberPropertyListener<*>) self.memberProperties.forEach {
             (decoration as ResolveMemberPropertyListener<T>).onPropertyFound(it.lola)
         }
         if (decoration is ResolveConstructorListener<*>) {
-            kClass.constructors.forEach { (decoration as ResolveConstructorListener<T>).onConstructorFound(it.lola) }
+            self.constructors.forEach { (decoration as ResolveConstructorListener<T>).onConstructorFound(it.lola) }
         }
     }
 
@@ -128,10 +137,9 @@ class LClass<T : Any> internal constructor(val kClass: KClass<T>) : Decorated(),
         Lola.onDecoratedClassMember(this, member, decoration)
     }
 
-    override fun toString(): String {
-        return kClass.toString()
-    }
-
     override val target: LClass<T>
         get() = this
 }
+
+val KClass<*>.constructorsParameters: Sequence<KParameter>
+    get() = constructors.asSequence().flatMap { it.parameters }
