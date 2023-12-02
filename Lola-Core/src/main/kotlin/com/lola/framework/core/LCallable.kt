@@ -1,11 +1,9 @@
 package com.lola.framework.core
 
 import com.lola.framework.core.context.Context
-import com.lola.framework.core.decoration.Decorated
-import com.lola.framework.core.decoration.Decoration
+import com.lola.framework.core.decoration.*
 import kotlin.reflect.KCallable
 import kotlin.reflect.KParameter
-import com.lola.framework.core.decoration.ValueSupplier
 import kotlin.reflect.KClass
 import kotlin.reflect.KFunction
 
@@ -15,7 +13,14 @@ class LCallable<R, T : KCallable<R>>(
      * Holder of the [LCallable]. [LClass] for callables in class (even static) and [Lola] for non-class callables.
      */
     val holder: Decorated
-) : LAnnotatedElement() {
+) : LAnnotatedElement(), DecorateListener<LCallable<R, T>> {
+
+    val isConstructor: Boolean
+        get() = holder is LClass<*> && self is KFunction<*> && holder.self.constructors.contains(self)
+
+    val isMember: Boolean
+        get() = holder is LClass<*> && holder.self.members.contains(self)
+
     /**
      * Calls this function in [context] with the specified mapping of parameters to arguments and returns the result.
      * If a parameter is not found in the mapping, is not optional (as per [KParameter.isOptional])
@@ -48,25 +53,24 @@ class LCallable<R, T : KCallable<R>>(
     inline fun <reified T : Decoration<*>> getDecoratedParameters(): Sequence<T> = getDecoratedParameters(T::class)
 
     @Suppress("UNCHECKED_CAST")
-    override fun <T : Decorated> decorate(decoration: Decoration<T>) {
+    override fun <D : Decorated> decorate(decoration: Decoration<D>) {
         super.decorate(decoration)
-        if (holder is LClass<*>) {
-            if (holder.self.members.contains(self)) {
-                holder.onDecoratedMember(
-                    this as LCallable<*, KCallable<*>>,
-                    decoration as Decoration<LCallable<*, KCallable<*>>>
-                )
-            } else if (self is KFunction<*> && holder.self.constructors.contains(self)) {
-                onDecoratedConstructor(holder, decoration)
-            }
+        if (holder is DecorateMemberListener<*> && isMember) {
+            holder.onDecoratedMember(decoration as Decoration<LCallable<R, KCallable<R>>>)
         }
+        if (holder is DecorateConstructorListener<*> && isConstructor) {
+            (holder as DecorateConstructorListener<*>)
+                .onDecoratedConstructor(decoration as Decoration<LCallable<Any, KFunction<Any>>>)
+        }
+        onDecorated(decoration as Decoration<LCallable<R, T>>)
     }
 
-    @Suppress("UNCHECKED_CAST")
-    private fun <T : Decorated, P : Any> onDecoratedConstructor(holder: LClass<P>, decoration: Decoration<T>) {
-        holder.onDecoratedConstructor(
-            this as LCallable<P, KFunction<P>>,
-            decoration as Decoration<LCallable<P, KFunction<P>>>
-        )
+    override val target: LCallable<R, T>
+        get() = this
+
+    override fun onDecorated(decoration: Decoration<LCallable<R, T>>) {
+        if (decoration is ResolveParameterListener) {
+            self.parameters.forEach { decoration.onParameterFound(it.lola) }
+        }
     }
 }

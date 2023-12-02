@@ -1,7 +1,7 @@
 package com.lola.framework.core
 
 import com.lola.framework.core.context.Context
-import com.lola.framework.core.decoration.ResolveClassAnywhereListener
+import com.lola.framework.core.decoration.ResolveClassListener
 import com.lola.framework.core.decoration.getDecorations
 import java.util.*
 import kotlin.reflect.KClass
@@ -13,7 +13,7 @@ internal val classes: MutableMap<KClass<*>, LClass<*>> = WeakHashMap()
 val <T : Any> KClass<T>.lola: LClass<T>
     get() = classes.computeIfAbsent(this) {
         val lClass = LClass(this)
-        Lola.getDecorations<ResolveClassAnywhereListener>().forEach { it.onClassFoundAnywhere(lClass) }
+        Lola.getDecorations<ResolveClassListener<*>>().forEach { it.onClassFound(lClass) }
         lClass
     } as LClass<T>
 

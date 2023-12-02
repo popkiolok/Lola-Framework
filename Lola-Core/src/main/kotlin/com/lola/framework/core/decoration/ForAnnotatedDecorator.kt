@@ -6,8 +6,7 @@ import com.lola.framework.core.context.AutoReference
 import kotlin.reflect.KClass
 import kotlin.reflect.jvm.jvmErasure
 
-class ForAnnotatedDecorator<T : Decoration<*>>(target: LClass<T>, ann: ForAnnotated) : DecorationClass<T>(target),
-    ResolveElementAnywhereListener<LClass<T>> {
+class ForAnnotatedDecorator<T : Decoration<*>>(target: LClass<T>, ann: ForAnnotated) : DecorationClass<T>(target) {
 
     private val annotation: KClass<out Annotation> = ann.annotation
 
@@ -17,14 +16,18 @@ class ForAnnotatedDecorator<T : Decoration<*>>(target: LClass<T>, ann: ForAnnota
                 it.lola.let { lp -> lp.decorate(AutoReference(lp, Auto("DecorationAnnotation"))) }
             }
         }
-    }
+        Lola.decorate(object : ResolveElementListener<Lola> {
+            override val target: Lola
+                get() = Lola
 
-    override fun onElementFoundAnywhere(element: LAnnotatedElement) {
-        element.self.annotations.firstOrNull { it.annotationClass == annotation }?.let { ann ->
-            element.decorate(target.createInstance {
-                it["DecorationTarget"] = element
-                it["DecorationAnnotation"] = ann
-            })
-        }
+            override fun onElementFound(element: LAnnotatedElement) {
+                element.self.annotations.firstOrNull { it.annotationClass == annotation }?.let { ann ->
+                    element.decorate(target.createInstance {
+                        it["DecorationTarget"] = element
+                        it["DecorationAnnotation"] = ann
+                    })
+                }
+            }
+        })
     }
 }

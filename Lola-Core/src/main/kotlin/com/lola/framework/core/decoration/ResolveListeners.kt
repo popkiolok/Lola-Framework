@@ -1,89 +1,113 @@
 package com.lola.framework.core.decoration
 
-import com.lola.framework.core.LAnnotatedElement
-import com.lola.framework.core.LCallable
-import com.lola.framework.core.LClass
+import com.lola.framework.core.*
 import kotlin.reflect.KCallable
 import kotlin.reflect.KFunction
 import kotlin.reflect.KProperty
 import kotlin.reflect.KProperty1
 
-// - ANYWHERE
-
-// - - OTHER ELEMENTS
-
-interface ResolveElementAnywhereListener<T : Decorated> : Decoration<T> {
-    fun onElementFoundAnywhere(element: LAnnotatedElement)
+interface ResolveElementListener<T : Decorated> : Decoration<T> {
+    fun onElementFound(element: LAnnotatedElement)
 }
 
-interface ResolveClassAnywhereListener<T : Decorated> : Decoration<T>  {
-    fun <T : Any> onClassFoundAnywhere(clazz: LClass<T>)
+interface ResolveClassListener<T : Decorated> : Decoration<T> {
+    fun <T : Any> onClassFound(clazz: LClass<T>)
 }
 
-interface ResolveConstructorAnywhereListener<T : Decorated> : Decoration<T>  {
-    fun <T : Any> onConstructorFoundAnywhere(constructor: LCallable<T, KFunction<T>>)
+interface ResolveParameterListener<T : Decorated> : Decoration<T> {
+    fun onParameterFound(parameter: LParameter)
 }
 
-interface ResolveParameterAnywhereListener<T : Decorated> : Decoration<T>  {
-    fun <T : Any> onParameterFoundAnywhere(constructor: LCallable<T, KFunction<T>>)
+// ALL CALLABLES
+
+interface ResolveConstructorListener<T : Decorated> : Decoration<T> {
+    fun <T : Any> onConstructorFound(constructor: LCallable<T, KFunction<T>>)
 }
 
-// - - ALL CALLABLES
+interface ResolveCallableListener<T : Decorated> : ResolveStaticCallableListener<T>, ResolveMemberCallableListener<T> {
+    fun <R> onCallableFound(callable: LCallable<R, KCallable<R>>)
 
-interface ResolveCallableAnywhereListener<T : Decorated> : Decoration<T>  {
-    fun <R> onCallableFoundAnywhere(member: LCallable<R, KCallable<R>>)
+    override fun <R> onStaticCallableFound(callable: LCallable<R, KCallable<R>>) {
+        onCallableFound(callable)
+    }
+
+    override fun <R> onMemberCallableFound(callable: LCallable<R, KCallable<R>>) {
+        onCallableFound(callable)
+    }
 }
 
-interface ResolvePropertyAnywhereListener<T : Decorated> : Decoration<T>  {
-    fun <R> onPropertyFoundAnywhere(property: LCallable<R, KProperty<R>>)
+interface ResolvePropertyListener<T : Decorated> : ResolveStaticPropertyListener<T>, ResolveMemberPropertyListener<T> {
+    fun <R> onPropertyFound(property: LCallable<R, KProperty<R>>)
+
+    override fun <R> onStaticPropertyFound(property: LCallable<R, KProperty<R>>) {
+        onPropertyFound(property)
+    }
+
+    override fun <T : Any, R> onMemberPropertyFound(property: LCallable<R, KProperty1<T, R>>) {
+        onPropertyFound(property as LCallable<R, KProperty<R>>)
+    }
 }
 
-interface ResolveFunctionAnywhereListener<T : Decorated> : Decoration<T>  {
-    fun <R> onFunctionFoundAnywhere(function: LCallable<R, KFunction<R>>)
+interface ResolveFunctionListener<T : Decorated> : ResolveStaticFunctionListener<T>, ResolveMemberFunctionListener<T> {
+    fun <R> onFunctionFound(function: LCallable<R, KFunction<R>>)
+
+    override fun <R> onStaticFunctionFound(function: LCallable<R, KFunction<R>>) {
+        onFunctionFound(function)
+    }
+
+    override fun <R> onMemberFunctionFound(function: LCallable<R, KFunction<R>>) {
+        onFunctionFound(function)
+    }
 }
 
-// - - STATIC CALLABLES
+// STATIC CALLABLES
 
-interface ResolveStaticCallableAnywhereListener<T : Decorated> : Decoration<T>  {
-    fun <R> onStaticCallableFoundAnywhere(member: LCallable<R, KCallable<R>>)
+interface ResolveStaticCallableListener<T : Decorated> : Decoration<T> {
+    fun <R> onStaticCallableFound(callable: LCallable<R, KCallable<R>>)
 }
 
-interface ResolveStaticPropertyAnywhereListener<T : Decorated> : Decoration<T>  {
-    fun <R> onStaticPropertyFoundAnywhere(property: LCallable<R, KProperty<R>>)
+interface ResolveStaticPropertyListener<T : Decorated> : ResolveStaticCallableListener<T> {
+    fun <R> onStaticPropertyFound(property: LCallable<R, KProperty<R>>)
+
+    override fun <R> onStaticCallableFound(callable: LCallable<R, KCallable<R>>) {
+        if (callable.self is KProperty<R>) {
+            onStaticPropertyFound(callable as LCallable<R, KProperty<R>>)
+        }
+    }
 }
 
-interface ResolveStaticFunctionAnywhereListener<T : Decorated> : Decoration<T>  {
-    fun <R> onStaticFunctionFoundAnywhere(function: LCallable<R, KFunction<R>>)
+interface ResolveStaticFunctionListener<T : Decorated> : ResolveStaticCallableListener<T> {
+    fun <R> onStaticFunctionFound(function: LCallable<R, KFunction<R>>)
+
+    override fun <R> onStaticCallableFound(callable: LCallable<R, KCallable<R>>) {
+        if (callable.self is KFunction<R>) {
+            onStaticFunctionFound(callable as LCallable<R, KFunction<R>>)
+        }
+    }
 }
 
-// - - MEMBER CALLABLES
+// MEMBER CALLABLES
 
-interface ResolveMemberCallableAnywhereListener<T : Decorated> : Decoration<T> {
-    fun <R> onMemberCallableFoundAnywhere(member: LCallable<R, KCallable<R>>)
+interface ResolveMemberCallableListener<T : Decorated> : Decoration<T> {
+    fun <R> onMemberCallableFound(callable: LCallable<R, KCallable<R>>)
 }
 
-interface ResolveMemberPropertyAnywhereListener<T : Decorated> : Decoration<T>  {
-    fun <T : Any, R> onMemberPropertyFoundAnywhere(property: LCallable<R, KProperty1<T, R>>)
+interface ResolveMemberPropertyListener<T : Decorated> : ResolveMemberCallableListener<T> {
+    fun <T : Any, R> onMemberPropertyFound(property: LCallable<R, KProperty1<T, R>>)
+
+    override fun <R> onMemberCallableFound(callable: LCallable<R, KCallable<R>>) {
+        if (callable.self is KProperty) {
+            onMemberPropertyFound(callable as LCallable<R, KProperty1<T, R>>)
+        }
+    }
 }
 
-interface ResolveMemberFunctionAnywhereListener<T : Decorated> : Decoration<T>  {
-    fun <R> onMemberFunctionFoundAnywhere(function: LCallable<R, KFunction<R>>)
-}
+interface ResolveMemberFunctionListener<T : Decorated> : ResolveMemberCallableListener<T> {
+    fun <R> onMemberFunctionFound(function: LCallable<R, KFunction<R>>)
 
-// - IN CLASS
-
-interface ResolveConstructorInClassListener<T : Any> : Decoration<LClass<T>> {
-    fun onConstructorFoundInClass(constructor: LCallable<T, KFunction<T>>)
-}
-
-interface ResolveMemberCallableInClassListener<T : Any> : Decoration<LClass<T>> {
-    fun <R> onMemberCallableFoundInClass(callable: LCallable<R, KCallable<R>>)
-}
-
-interface ResolveMemberPropertyInClassListener<T : Any> : Decoration<LClass<T>> {
-    fun <R> onMemberPropertyFoundInClass(property: LCallable<R, KProperty1<T, R>>)
-}
-
-interface ResolveMemberFunctionInClassListener<T : Any> : Decoration<LClass<T>> {
-    fun <R> onMemberFunctionFoundInClass(function: LCallable<R, KFunction<R>>)
+    override fun <R> onMemberCallableFound(callable: LCallable<R, KCallable<R>>) {
+        if (callable.self is KFunction) {
+            onMemberFunctionFound(callable as LCallable<R, KFunction<R>>)
+        }
+    }
 }
