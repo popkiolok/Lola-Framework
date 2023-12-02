@@ -24,6 +24,10 @@ interface ResolveConstructorAnywhereListener<T : Decorated> : Decoration<T>  {
     fun <T : Any> onConstructorFoundAnywhere(constructor: LCallable<T, KFunction<T>>)
 }
 
+interface ResolveParameterAnywhereListener<T : Decorated> : Decoration<T>  {
+    fun <T : Any> onParameterFoundAnywhere(constructor: LCallable<T, KFunction<T>>)
+}
+
 // - - ALL CALLABLES
 
 interface ResolveCallableAnywhereListener<T : Decorated> : Decoration<T>  {
@@ -68,18 +72,18 @@ interface ResolveMemberFunctionAnywhereListener<T : Decorated> : Decoration<T>  
 
 // - IN CLASS
 
-interface ResolveConstructorListener<T : Any> : Decoration<LClass<T>> {
-    fun onConstructorFound(constructor: LCallable<T, KFunction<T>>)
+interface ResolveConstructorInClassListener<T : Any> : Decoration<LClass<T>> {
+    fun onConstructorFoundInClass(constructor: LCallable<T, KFunction<T>>)
 }
 
-interface ResolveMemberListener<T : Any> : Decoration<LClass<T>> {
-    fun onMemberFound(member: LCallable<*, *>)
+interface ResolveMemberCallableInClassListener<T : Any> : Decoration<LClass<T>> {
+    fun <R> onMemberCallableFoundInClass(callable: LCallable<R, KCallable<R>>)
 }
 
-interface ResolveMemberPropertyListener<T : Any> : Decoration<LClass<T>> {
-    fun onPropertyFound(property: LCallable<*, KProperty1<T, *>>)
+interface ResolveMemberPropertyInClassListener<T : Any> : Decoration<LClass<T>> {
+    fun <R> onMemberPropertyFoundInClass(property: LCallable<R, KProperty1<T, R>>)
 }
 
-interface ResolveMemberFunctionListener<T : Any> : Decoration<LClass<T>> {
-    fun onFunctionFound(function: LCallable<*, KFunction<*>>)
+interface ResolveMemberFunctionInClassListener<T : Any> : Decoration<LClass<T>> {
+    fun <R> onMemberFunctionFoundInClass(function: LCallable<R, KFunction<R>>)
 }

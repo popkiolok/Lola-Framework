@@ -6,35 +6,24 @@ import com.lola.framework.core.Lola
 import kotlin.reflect.KCallable
 import kotlin.reflect.KFunction
 
-interface DecorateClassListener : Decoration<Lola> {
-    fun <T : Any> onDecoratedClass(clazz: LClass<T>, decoration: Decoration<LClass<T>>)
+interface DecorateClassListener<T : Decorated> : Decoration<T> {
+    fun <T : Any> onDecoratedClass(decoration: Decoration<LClass<T>>)
 }
 
-interface DecorateClassConstructorListener : Decoration<Lola> {
-    fun <T : Any> onDecoratedClassConstructor(
-        clazz: LClass<T>,
-        constructor: LCallable<T, KFunction<T>>,
-        decoration: Decoration<LCallable<T, KFunction<T>>>
-    )
+interface DecorateClassConstructorListener<T : Decorated> : Decoration<T> {
+    fun <T : Any> onDecoratedClassConstructor(decoration: Decoration<LCallable<T, KFunction<T>>>)
 }
 
 interface DecorateClassMemberListener<T : Decorated> : Decoration<T> {
-    fun <T : Any> onDecoratedClassMember(
-        clazz: LClass<T>,
-        member: LCallable<*, KCallable<*>>,
-        decoration: Decoration<LCallable<*, KCallable<*>>>
-    )
+    fun <T> onDecoratedClassMember(decoration: Decoration<LCallable<T, KCallable<T>>>)
 }
 
 interface DecorateConstructorListener<T : Any> : Decoration<LClass<T>> {
-    fun onDecoratedConstructor(
-        constructor: LCallable<T, KFunction<T>>,
-        decoration: Decoration<LCallable<T, KFunction<T>>>
-    )
+    fun onDecoratedConstructor(decoration: Decoration<LCallable<T, KFunction<T>>>)
 }
 
 interface DecorateMemberListener<T : Any> : Decoration<LClass<T>> {
-    fun onDecoratedMember(member: LCallable<*, KCallable<*>>, decoration: Decoration<LCallable<*, KCallable<*>>>)
+    fun <T> onDecoratedMember(decoration: Decoration<LCallable<T, KCallable<T>>>)
 }
 
 interface DecorateListener<T : Decorated> : Decoration<T> {

@@ -6,9 +6,11 @@ import kotlin.reflect.*
 import kotlin.reflect.full.memberFunctions
 import kotlin.reflect.full.memberProperties
 
+@Suppress("UNCHECKED_CAST")
 class LClass<T : Any> internal constructor(override val self: KClass<T>) : LAnnotatedElement(),
-    DecorateConstructorListener<T>,
-    DecorateMemberListener<T> {
+    ResolveConstructorInClassListener<T>, ResolveMemberCallableInClassListener<T>,
+    ResolveMemberPropertyInClassListener<T>, ResolveMemberFunctionInClassListener<T>,
+    DecorateListener<LClass<T>>, DecorateConstructorListener<T>, DecorateMemberListener<T>, CreateInstanceListener<T> {
     /**
      * Class level context. Extends [Lola.context].
      */
@@ -90,7 +92,7 @@ class LClass<T : Any> internal constructor(override val self: KClass<T>) : LAnno
                 }
             }
         }
-        getDecorations<CreateInstanceListener<T>>().forEach { it.onCreateInstance(instance, context) }
+        onCreateInstance(instance, ctx)
     }
 
     fun <T : Decoration<*>> hasDecoratedMembers(decoration: KClass<out T>): Boolean {
@@ -101,44 +103,90 @@ class LClass<T : Any> internal constructor(override val self: KClass<T>) : LAnno
         return self.members.asSequence().mapNotNull { it.lola.getDecorations(decoration).firstOrNull() }
     }
 
+    fun <T : Decoration<*>> hasDecoratedConstructors(decoration: KClass<out T>): Boolean {
+        return self.members.any { it.lola.hasDecoration(decoration) }
+    }
+
+    fun <T : Decoration<*>> getDecoratedConstructors(decoration: KClass<out T>): Sequence<T> {
+        return self.members.asSequence().mapNotNull { it.lola.getDecorations(decoration).firstOrNull() }
+    }
+
     inline fun <reified T : Decoration<*>> hasDecoratedMembers(): Boolean = hasDecoratedMembers(T::class)
 
     inline fun <reified T : Decoration<*>> getDecoratedMembers(): Sequence<T> = getDecoratedMembers(T::class)
 
-    @Suppress("UNCHECKED_CAST")
+    inline fun <reified T : Decoration<*>> hasDecoratedConstructors(): Boolean = hasDecoratedConstructors(T::class)
+
+    inline fun <reified T : Decoration<*>> getDecoratedConstructors(): Sequence<T> = getDecoratedConstructors(T::class)
+
     override fun <D : Decorated> decorate(decoration: Decoration<D>) {
         super.decorate(decoration)
-        // Not 'when' because decoration can implement multiple interfaces
-        if (decoration is ResolveMemberListener<*>) self.members.forEach { decoration.onMemberFound(it.lola) }
-        if (decoration is ResolveMemberFunctionListener<*>) self.memberFunctions.forEach {
-            decoration.onFunctionFound(it.lola)
-        }
-        if (decoration is ResolveMemberPropertyListener<*>) self.memberProperties.forEach {
-            (decoration as ResolveMemberPropertyListener<T>).onPropertyFound(it.lola)
-        }
-        if (decoration is ResolveConstructorListener<*>) {
-            self.constructors.forEach { (decoration as ResolveConstructorListener<T>).onConstructorFound(it.lola) }
-        }
-    }
-
-    override fun onDecoratedConstructor(
-        constructor: LCallable<T, KFunction<T>>,
-        decoration: Decoration<LCallable<T, KFunction<T>>>
-    ) {
-        getDecorations<DecorateConstructorListener<T>>().forEach { it.onDecoratedConstructor(constructor, decoration) }
-        Lola.onDecoratedClassConstructor(this, constructor, decoration)
-    }
-
-    override fun onDecoratedMember(
-        member: LCallable<*, KCallable<*>>,
-        decoration: Decoration<LCallable<*, KCallable<*>>>
-    ) {
-        getDecorations<DecorateMemberListener<T>>().forEach { it.onDecoratedMember(member, decoration) }
-        Lola.onDecoratedClassMember(this, member, decoration)
+        onDecorated(decoration as Decoration<LClass<T>>)
     }
 
     override val target: LClass<T>
         get() = this
+
+    override fun onConstructorFoundInClass(constructor: LCallable<T, KFunction<T>>) {
+        getDecorations<ResolveConstructorInClassListener<T>>().forEach { it.onConstructorFoundInClass(constructor) }
+        Lola.onConstructorFoundAnywhere(constructor)
+    }
+
+    override fun <R> onMemberCallableFoundInClass(callable: LCallable<R, KCallable<R>>) {
+        if (callable.self is KProperty) {
+            onMemberPropertyFoundInClass(callable as LCallable<R, KProperty1<T, R>>)
+        } else if (callable.self is KFunction) {
+            onMemberFunctionFoundInClass(callable as LCallable<R, KFunction<R>>)
+        }
+        getDecorations<ResolveMemberCallableInClassListener<T>>().forEach { it.onMemberCallableFoundInClass(callable) }
+        Lola.onMemberCallableFoundAnywhere(callable)
+    }
+
+    override fun <R> onMemberPropertyFoundInClass(property: LCallable<R, KProperty1<T, R>>) {
+        getDecorations<ResolveMemberPropertyInClassListener<T>>().forEach { it.onMemberPropertyFoundInClass(property) }
+        Lola.onMemberPropertyFoundAnywhere(property)
+    }
+
+    override fun <R> onMemberFunctionFoundInClass(function: LCallable<R, KFunction<R>>) {
+        getDecorations<ResolveMemberFunctionInClassListener<T>>().forEach { it.onMemberFunctionFoundInClass(function) }
+        Lola.onMemberFunctionFoundAnywhere(function)
+    }
+
+    override fun onDecorated(decoration: Decoration<LClass<T>>) {
+        if (decoration is ResolveConstructorInClassListener<T>) {
+            self.constructors.forEach { decoration.onConstructorFoundInClass(it.lola) }
+        }
+        if (decoration is ResolveMemberCallableInClassListener<T>) {
+            self.members.forEach { decoration.onMemberCallableFoundInClass(it.lola) }
+        }
+        if (decoration is ResolveMemberPropertyInClassListener<T>) {
+            self.memberProperties.forEach { decoration.onMemberPropertyFoundInClass(it.lola) }
+        }
+        if (decoration is ResolveMemberFunctionInClassListener<T>) {
+            self.memberFunctions.forEach { decoration.onMemberFunctionFoundInClass(it.lola) }
+        }
+        if (decoration is DecorateConstructorListener<T>) {
+            getDecoratedConstructors<Decoration<LCallable<T, KFunction<T>>>>().forEach { decoration.onDecoratedConstructor(it) }
+        }
+        if (decoration is DecorateMemberListener<T>) {
+            getDecoratedMembers<Decoration<LCallable<T, KCallable<T>>>>().forEach { decoration.onDecoratedMember(it) }
+        }
+        Lola.onDecoratedClass(decoration)
+    }
+
+    override fun onDecoratedConstructor(decoration: Decoration<LCallable<T, KFunction<T>>>) {
+        getDecorations<DecorateConstructorListener<T>>().forEach { it.onDecoratedConstructor(decoration) }
+        Lola.onDecoratedClassConstructor(decoration)
+    }
+
+    override fun <C> onDecoratedMember(decoration: Decoration<LCallable<C, KCallable<C>>>) {
+        getDecorations<DecorateMemberListener<T>>().forEach { it.onDecoratedMember(decoration) }
+        Lola.onDecoratedClassMember(decoration)
+    }
+
+    override fun onCreateInstance(instance: T, context: Context) {
+        getDecorations<CreateInstanceListener<T>>().forEach { it.onCreateInstance(instance, context) }
+    }
 }
 
 val KClass<*>.constructorsParameters: Sequence<KParameter>
