@@ -11,7 +11,7 @@ import kotlin.reflect.full.memberFunctions
 import kotlin.reflect.full.memberProperties
 
 object Lola : Decorated(), DecorateListener<Lola>, DecorateClassListener<Lola>, DecorateConstructorListener<Lola>,
-    DecorateMemberListener<Lola> {
+    DecorateMemberListener<Lola>, DecorateParameterListener<Lola> {
     val context = Context(ArrayList())
 
     fun initialize(vararg packages: Package) {
@@ -76,5 +76,9 @@ object Lola : Decorated(), DecorateListener<Lola>, DecorateClassListener<Lola>, 
 
     override fun <T> onDecoratedMember(decoration: Decoration<LCallable<T, KCallable<T>>>) {
         getDecorations<DecorateMemberListener<*>>().forEach { it.onDecoratedMember(decoration) }
+    }
+
+    override fun onDecoratedParameter(decoration: Decoration<LParameter>) {
+        getDecorations<DecorateParameterListener<*>>().forEach { it.onDecoratedParameter(decoration) }
     }
 }

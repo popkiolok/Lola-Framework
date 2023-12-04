@@ -18,7 +18,7 @@ class DependencyReference(override val target: LAnnotatedElement, ann: Dep) :
 
     override fun supplyValue(context: Context): Any {
         return try {
-            (context[ModuleInstanceStorage::class] as ModuleInstanceStorage).load(module).instance
+            context.mis.load(module)
         } catch (e: Throwable) {
             log.error { "An error occurred while supplying dependency for '$target': '${e.message}'." }
             e.printStackTrace()

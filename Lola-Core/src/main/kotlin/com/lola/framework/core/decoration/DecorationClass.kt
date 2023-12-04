@@ -8,10 +8,15 @@ import kotlin.reflect.jvm.jvmErasure
 
 
 abstract class DecorationClass<T : Decoration<*>>(final override val target: LClass<T>) : Decoration<LClass<T>> {
+    protected lateinit var targetParam: LParameter
+
     init {
         target.self.constructorsParameters.forEach {
             if (it.type.jvmErasure.isSubclassOf(Decorated::class)) {
-                it.lola.let { lp -> lp.decorateIfAbsent { AutoReference(lp, Auto("DecorationTarget")) } }
+                it.lola.let { lp ->
+                    lp.decorateIfAbsent { AutoReference(lp, Auto("DecorationTarget")) }
+                    targetParam = lp
+                }
             }
         }
     }

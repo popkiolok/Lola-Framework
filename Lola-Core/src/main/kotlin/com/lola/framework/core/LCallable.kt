@@ -13,7 +13,7 @@ class LCallable<R, T : KCallable<R>>(
      * Holder of the [LCallable]. [LClass] for callables in class (even static) and [Lola] for non-class callables.
      */
     val holder: Decorated
-) : LAnnotatedElement(), DecorateListener<LCallable<R, T>> {
+) : LAnnotatedElement(), DecorateListener<LCallable<R, T>>, DecorateParameterListener<LCallable<R, T>> {
 
     val isConstructor: Boolean
         get() = holder is LClass<*> && self is KFunction<*> && holder.self.constructors.contains(self)
@@ -71,6 +71,13 @@ class LCallable<R, T : KCallable<R>>(
     override fun onDecorated(decoration: Decoration<LCallable<R, T>>) {
         if (decoration is ResolveParameterListener) {
             self.parameters.forEach { decoration.onParameterFound(it.lola) }
+        }
+    }
+
+    override fun onDecoratedParameter(decoration: Decoration<LParameter>) {
+        getDecorations<DecorateParameterListener<*>>().forEach { it.onDecoratedParameter(decoration) }
+        if (holder is DecorateParameterListener<*>) {
+            holder.onDecoratedParameter(decoration)
         }
     }
 }

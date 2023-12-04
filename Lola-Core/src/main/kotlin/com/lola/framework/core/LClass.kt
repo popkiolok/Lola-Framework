@@ -9,8 +9,7 @@ import kotlin.reflect.full.memberProperties
 @Suppress("UNCHECKED_CAST")
 class LClass<T : Any> internal constructor(override val self: KClass<T>, val holder: Decorated = Lola) :
     LAnnotatedElement(), DecorateListener<LClass<T>>, DecorateConstructorListener<LClass<T>>,
-    DecorateMemberListener<LClass<T>>,
-    CreateInstanceListener<T> {
+    DecorateMemberListener<LClass<T>>, DecorateParameterListener<LClass<T>>, CreateInstanceListener<T> {
     /**
      * Class level context. Extends [Lola.context].
      */
@@ -159,6 +158,13 @@ class LClass<T : Any> internal constructor(override val self: KClass<T>, val hol
         getDecorations<DecorateMemberListener<*>>().forEach { it.onDecoratedMember(decoration) }
         if (holder is DecorateMemberListener<*>) {
             holder.onDecoratedMember(decoration)
+        }
+    }
+
+    override fun onDecoratedParameter(decoration: Decoration<LParameter>) {
+        getDecorations<DecorateParameterListener<*>>().forEach { it.onDecoratedParameter(decoration) }
+        if (holder is DecorateParameterListener<*>) {
+            holder.onDecoratedParameter(decoration)
         }
     }
 

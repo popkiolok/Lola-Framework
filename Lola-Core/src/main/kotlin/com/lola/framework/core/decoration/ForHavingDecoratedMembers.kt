@@ -1,10 +1,13 @@
 package com.lola.framework.core.decoration
 
-import com.lola.framework.core.LCallable
 import com.lola.framework.core.LClass
 import com.lola.framework.core.Lola
-import kotlin.reflect.KCallable
+import kotlin.reflect.KClass
 import kotlin.reflect.full.isSubclassOf
+
+@Target(AnnotationTarget.CLASS)
+@Retention(AnnotationRetention.RUNTIME)
+annotation class ForHavingDecoratedMembers(val decoration: KClass<out Decoration<*>>)
 
 @ForAnnotated(ForHavingDecoratedMembers::class)
 class ForHavingDecoratedMembersDecorator<T : Decoration<*>>(target: LClass<T>, ann: ForHavingDecoratedMembers) :
