@@ -6,9 +6,19 @@ import kotlin.reflect.KCallable
 import kotlin.reflect.KParameter
 import kotlin.reflect.KType
 
+/**
+ * Lola API extension for Kotlin's reflection [KAnnotatedElement], that makes it [Decorated], allowing associating
+ * decorations with [KAnnotatedElement]s.
+ */
 abstract class LAnnotatedElement : Decorated() {
+    /**
+     * Kotlin's reflection [KAnnotatedElement] this object is associated with.
+     */
     abstract val self: KAnnotatedElement
 
+    /**
+     * Returns string representation of [self].
+     */
     override fun toString(): String {
         return self.toString()
     }

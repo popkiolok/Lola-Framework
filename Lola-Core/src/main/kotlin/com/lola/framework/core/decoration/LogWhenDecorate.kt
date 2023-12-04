@@ -9,10 +9,12 @@ import java.lang.String.format
 import kotlin.reflect.full.isSubclassOf
 
 /**
- * Log when annotated decoration applied to something.
+ * Log when annotated decoration or decoration extending annotated class applied to something.
  *
  * @property logger Name of logger that will be used to log.
  * @property level Logging level.
+ * @property pattern Message pattern. `{decoration}` in pattern will be replaced with string representation of the
+ * decoration object. `{target}` will be replaced with string representation of [Decorated] decoration applied to.
  */
 @Target(AnnotationTarget.CLASS)
 @Retention(AnnotationRetention.RUNTIME)
@@ -22,6 +24,9 @@ annotation class LogWhenDecorate(
     val pattern: String = "Found '{decoration}' '{target}'."
 )
 
+/**
+ * [LClass] decoration that implements behavior expected for classes annotated with [LogWhenDecorate].
+ */
 @ForAnnotated(LogWhenDecorate::class)
 class DecorateLogger<T : Decoration<*>>(target: LClass<T>, private val ann: LogWhenDecorate) :
     DecorationClass<T>(target) {

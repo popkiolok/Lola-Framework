@@ -2,18 +2,19 @@ package com.lola.framework.core
 
 import com.lola.framework.core.context.Context
 import com.lola.framework.core.decoration.*
-import kotlin.reflect.KCallable
-import kotlin.reflect.KParameter
-import kotlin.reflect.KClass
-import kotlin.reflect.KFunction
+import kotlin.reflect.*
 
-class LCallable<R, T : KCallable<R>>(
-    override val self: T,
-    /**
-     * Holder of the [LCallable]. [LClass] for callables in class (even static) and [Lola] for non-class callables.
-     */
-    val holder: Decorated
-) : LAnnotatedElement(), DecorateListener<LCallable<R, T>>, DecorateParameterListener<LCallable<R, T>> {
+/**
+ * Lola API extension for Kotlin's reflection [KCallable].
+ *
+ * @param R Callable return type.
+ * @param T Type of Kotlin's reflection [KCallable] this object is associated with.
+ * @property holder Holder of the [LCallable]. [LClass] for callables in class and extension callables (including
+ * constructors) and [Lola] for non-class callables.
+ * @constructor Create empty L callable
+ */
+class LCallable<R, T : KCallable<R>>(override val self: T, val holder: Decorated) : LAnnotatedElement(),
+    DecorateListener<LCallable<R, T>>, DecorateParameterListener<LCallable<R, T>> {
 
     val isConstructor: Boolean
         get() = holder is LClass<*> && self is KFunction<*> && holder.self.constructors.contains(self)
