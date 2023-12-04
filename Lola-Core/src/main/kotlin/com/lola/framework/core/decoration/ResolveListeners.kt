@@ -6,8 +6,25 @@ import kotlin.reflect.KFunction
 import kotlin.reflect.KProperty
 import kotlin.reflect.KProperty1
 
-interface ResolveElementListener<T : Decorated> : Decoration<T> {
+interface ResolveElementListener<T : Decorated> : ResolveClassListener<T>, ResolveConstructorListener<T>,
+    ResolveCallableListener<T>, ResolveParameterListener<T> {
     fun onElementFound(element: LAnnotatedElement)
+
+    override fun <T : Any> onClassFound(clazz: LClass<T>) {
+        onElementFound(clazz)
+    }
+
+    override fun <T : Any> onConstructorFound(constructor: LCallable<T, KFunction<T>>) {
+        onElementFound(constructor)
+    }
+
+    override fun <R> onCallableFound(callable: LCallable<R, KCallable<R>>) {
+        onElementFound(callable)
+    }
+
+    override fun onParameterFound(parameter: LParameter) {
+        onElementFound(parameter)
+    }
 }
 
 interface ResolveClassListener<T : Decorated> : Decoration<T> {

@@ -8,8 +8,10 @@ import kotlin.reflect.jvm.jvmErasure
 
 internal val callables: MutableMap<KCallable<*>, LCallable<*, *>> = WeakHashMap()
 
-@Suppress("UNCHECKED_CAST")
+/**
+ * Gets or creates new [LCallable] for this [KCallable].
+ */
 val <T : KCallable<R>, R> T.lola: LCallable<R, T>
-    get() = callables.computeIfAbsent(this) {
-        LCallable(this, (instanceParameter ?: extensionReceiverParameter)?.type?.jvmErasure?.lola ?: Lola)
-    } as LCallable<R, T>
+    get() = @Suppress("UNCHECKED_CAST") (callables.computeIfAbsent(this) {
+        LCallable(this, runCatching { (instanceParameter ?: extensionReceiverParameter)?.type?.jvmErasure?.lola }.getOrNull() ?: Lola)
+    } as LCallable<R, T>)

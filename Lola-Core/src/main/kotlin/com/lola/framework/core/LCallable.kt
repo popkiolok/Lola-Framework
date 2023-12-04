@@ -16,9 +16,15 @@ import kotlin.reflect.*
 class LCallable<R, T : KCallable<R>>(override val self: T, val holder: Decorated) : LAnnotatedElement(),
     DecorateListener<LCallable<R, T>>, DecorateParameterListener<LCallable<R, T>> {
 
+    /**
+     * Returns if this callable is class constructor (this also means [holder] is [LClass] and [self] is [KFunction]).
+     */
     val isConstructor: Boolean
         get() = holder is LClass<*> && self is KFunction<*> && holder.self.constructors.contains(self)
 
+    /**
+     * Returns if this callable is class member (this also means [holder] is [LClass]).
+     */
     val isMember: Boolean
         get() = holder is LClass<*> && holder.self.members.contains(self)
 

@@ -6,6 +6,8 @@ plugins {
 group = "com.lola.framework"
 version = "1.0-SNAPSHOT"
 
+sourceSets.create("example")
+
 repositories {
     mavenCentral()
 }
@@ -22,6 +24,9 @@ dependencies {
     testImplementation(kotlin("test"))
     testImplementation("org.mockito.kotlin:mockito-kotlin:5.+")
     testImplementation("org.apache.logging.log4j:log4j-slf4j2-impl:2.+")
+
+    "exampleImplementation"(sourceSets.main.get().runtimeClasspath)
+    "exampleImplementation"("org.apache.logging.log4j:log4j-slf4j2-impl:2.+")
 }
 
 tasks.test {

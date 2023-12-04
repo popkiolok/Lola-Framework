@@ -130,7 +130,10 @@ class LClass<T : Any> internal constructor(override val self: KClass<T>, val hol
         get() = this
 
     override fun onDecorated(decoration: Decoration<LClass<T>>) {
-        self.members.forEach { it.lola.onDecorated(decoration as Decoration<LCallable<Any?, KCallable<*>>>) }
+        val childHandler =
+            { it: KCallable<*> -> it.lola.onDecorated(decoration as Decoration<LCallable<Any?, KCallable<*>>>) }
+        self.constructors.forEach(childHandler)
+        self.members.forEach(childHandler)
         if (decoration is ResolveConstructorListener<*>) {
             self.constructors.forEach { decoration.onConstructorFound(it.lola) }
         }
