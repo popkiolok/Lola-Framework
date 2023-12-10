@@ -1,7 +1,7 @@
 package com.lola.framework.command
 
 /**
- * Annotate class as [CommandContainer].
+ * Annotate class as [CommandClass].
  *
  * @param name Command name. Can contain spaces for subcommands.
  */

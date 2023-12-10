@@ -4,10 +4,11 @@ import com.lola.framework.command.ParseResult
 import com.lola.framework.command.ParseResultSuccess
 import com.lola.framework.command.ParsingContext
 import com.lola.framework.command.SingletonArgumentParser
-import com.lola.framework.core.LType
+import kotlin.reflect.KType
+import kotlin.reflect.jvm.jvmErasure
 
 open class ArgumentString : SingletonArgumentParser {
-    override fun canParse(type: LType) = type.clazz == String::class
+    override fun canParse(type: KType) = type.jvmErasure == String::class
 
     override fun parse(pctx: ParsingContext): ParseResult {
         return parseAsString(pctx.argsLeft, pctx.isLast)

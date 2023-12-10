@@ -3,7 +3,8 @@ package com.lola.framework.command.jmh
 import com.lola.framework.command.Command
 import com.lola.framework.command.CommandSystem
 import com.lola.framework.command.arguments.ArgumentBigDecimal
-import com.lola.framework.core.kotlin.LClassKotlin
+import com.lola.framework.core.Lola
+import com.lola.framework.core.lola
 import com.lola.framework.setting.Setting
 import org.openjdk.jmh.annotations.*
 import java.math.BigDecimal
@@ -23,11 +24,11 @@ open class CommandExecutionBenchmark {
 
     @State(Scope.Benchmark)
     open class Env {
-        val cs = CommandSystem()
+        val cs: CommandSystem
 
         init {
-            LClassKotlin(TestCommand::class)
-            LClassKotlin(ArgumentBigDecimal::class)
+            Lola.initialize()
+            cs = CommandSystem::class.lola.createInstance()
         }
 
         @Command("test")

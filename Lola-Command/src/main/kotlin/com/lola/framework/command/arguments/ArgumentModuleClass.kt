@@ -1,29 +1,28 @@
 package com.lola.framework.command.arguments
 
 import com.lola.framework.command.*
-import com.lola.framework.core.LType
-import com.lola.framework.module.ModuleContainer
-import com.lola.framework.module.ModuleRegistry
+import com.lola.framework.module.*
 import org.apache.commons.text.similarity.LevenshteinDistance
 import kotlin.math.min
+import kotlin.reflect.KType
+import kotlin.reflect.jvm.jvmErasure
 
-class ArgumentModuleContainer : ArgumentString() {
+class ArgumentModuleClass : ArgumentString() {
 
-    override fun canParse(type: LType) = type.clazz == ModuleContainer::class
+    override fun canParse(type: KType) = type.jvmErasure == ModuleClass::class
 
     override fun parse(pctx: ParsingContext): ParseResult {
         val asString = (super.parseAsString(pctx.argsLeft, pctx.isLast))
         val name = asString.value
-        val module = ModuleRegistry.modulesByName[name]
-            ?: ModuleRegistry.modulesByName.entries.firstOrNull { (n, _) ->
+        val module = modulesByName[name] ?: modulesByName.entries.firstOrNull { (n, _) ->
                 name.equals(n, ignoreCase = true) || name.equals(n.replace(" ", ""), ignoreCase = true)
-            }?.value ?: ModuleRegistry.modules.firstOrNull {
-                it.path.toString().equals(name, ignoreCase = true) ||
-                        it.path.toString().replace(" ", "").equals(name, ignoreCase = true)
+            }?.value ?: modulesByName.values.firstOrNull {
+                it.data.simpleName.equals(name, ignoreCase = true) ||
+                        it.data.simpleName.replace(" ", "").equals(name, ignoreCase = true)
             }
             ?: run {
-                val allModules = ModuleRegistry.modulesByName.entries.flatMap { (n, m) ->
-                    listOf(n.lowercase(), m.path.toString().lowercase())
+                val allModules = modulesByName.entries.flatMap { (n, m) ->
+                    listOf(n.lowercase(), m.data.simpleName.lowercase())
                 }
                 val nameLowCase = name.lowercase()
                 bestCompletion(nameLowCase, allModules)?.let { nearest ->
@@ -38,12 +37,12 @@ class ArgumentModuleContainer : ArgumentString() {
         val asString = super.parseAsString(argsLeft, isLast)
         val name = asString.value
         val nameLowCase = name.lowercase()
-        return ModuleRegistry.modulesByName.entries
+        return modulesByName.entries
             .sortedBy { (n, m) ->
                 val nLowCase = n.lowercase()
                 min(
                     LevenshteinDistance.getDefaultInstance().apply(nameLowCase, nLowCase),
-                    LevenshteinDistance.getDefaultInstance().apply(nameLowCase, m.path.toString().lowercase())
+                    LevenshteinDistance.getDefaultInstance().apply(nameLowCase, m.data.simpleName.lowercase())
                 ).let { if (nLowCase.contains(nameLowCase)) it else it * 4 }
             }.map { it.key }.let { strings ->
                 if (isLast) strings else strings.map { "\"$it\"" }

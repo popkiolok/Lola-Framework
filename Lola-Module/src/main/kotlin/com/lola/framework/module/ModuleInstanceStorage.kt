@@ -1,93 +1,69 @@
 package com.lola.framework.module
 
-import com.lola.framework.core.LClass
 import com.lola.framework.core.context.Context
-import com.lola.framework.core.decoration.hasDecoration
-import com.lola.framework.core.LParameter
-import com.lola.framework.core.kotlin.lola
+import com.lola.framework.core.lola
 import kotlin.reflect.KClass
+import kotlin.reflect.cast
 
 /**
  * Storage of module instances.
  */
 class ModuleInstanceStorage(val ctxInitializer: (Context) -> Unit = {}) {
     /**
-     * Returns unmodifiable view collection of currently loaded modules in this [ModuleInstanceStorage].
+     * Returns collection of currently loaded modules in this [ModuleInstanceStorage].
      */
-    val loaded: Collection<ContainerInstance>
+    val loaded: Collection<Any>
         get() = loadedMap.values
 
-    val loadedMap: MutableMap<LClass, ContainerInstance> = LinkedHashMap()
+    val loadedMap: MutableMap<ModuleClass<*>, Any> = LinkedHashMap()
+
+    var onUnload = { _: Any -> } // temporary
 
     /**
-     * Creates new instance for container, if module is not loaded and returns this instance.
-     *
-     * @param module The [ModuleContainer] decoration of container to load.
-     * @param params Parameters for container constructor.
-     * @return The loaded container instance.
+     * Creates new instance for [moduleClass] if the module is not loaded and returns this instance.
      */
-    fun load(module: ModuleContainer, params: Map<LParameter, Any?> = emptyMap()): ContainerInstance {
-        val container = module.self
-        return loadedMap[container] ?: run {
-            val inst = container.createInstance(
-                params,
-                ctxInitializer = { ctx ->
-                    ctx.register(
-                        "ModuleInstanceStorage",
-                        ModuleInstanceStorage::class,
-                        ModuleInstanceStorage::class.java
-                    ) { this }
-                    ctxInitializer(ctx)
-                })
+    fun <T : Any> load(moduleClass: ModuleClass<T>): T {
+        return loadedMap[moduleClass]?.let { moduleClass.target.self.cast(it) } ?: run {
+            val inst = moduleClass.target.createInstance(ctxInitializer = { ctx ->
+                ctx.register { this }
+                ctxInitializer(ctx)
+            })
             // Important to put instance before calling on load functions, because code executing in these functions
             // can call load function for this module another time, and if instance is not present in the map,
             // the module will be loaded twice.
-            loadedMap[container] = inst
-            container.allFunctions.forEach {
-                if (it.hasDecoration<OnLoadFunction>()) {
-                    it(inst)
-                }
-            }
-            log.info { "Loaded module '${module.name}'." }
+            loadedMap[moduleClass] = inst
+            moduleClass.target.getDecoratedMembers<OnLoadFunction>().forEach { it.target.self.call(inst) }
+            log.info { "Loaded module '${moduleClass.data.name}'." }
             inst
         }
     }
 
     /**
-     * Unloads a module from the loaded module storage.
-     *
-     * @param module The [ModuleContainer] decoration of container to unload.
+     * Unloads a module from loaded module storage.
      */
-    fun unload(module: ModuleContainer) {
-        val container = module.self
-        val inst = loadedMap.remove(container) ?: return
-        container.allFunctions.forEach {
-            if (it.hasDecoration<OnUnloadFunction>()) {
-                it(inst)
-            }
-        }
-        log.info { "Unloaded module '${module.name}'." }
+    fun unload(moduleClass: ModuleClass<*>) {
+        val inst = loadedMap.remove(moduleClass) ?: return
+        onUnload(inst)
+        moduleClass.target.getDecoratedMembers<OnUnloadFunction>().forEach { it.target.self.call(inst) }
+        log.info { "Unloaded module '${moduleClass.data.name}'." }
     }
 
     /**
      * Gets if module is loaded in this storage.
-     *
-     * @param module The [ModuleContainer] decoration of container to check.
-     * @return True if module is loaded, false otherwise.
      */
-    fun isLoaded(module: ModuleContainer): Boolean {
-        return loadedMap.containsKey(module.self)
+    fun isLoaded(moduleClass: ModuleClass<*>): Boolean {
+        return loadedMap.containsKey(moduleClass)
     }
 }
 
-inline fun <T : Any> ModuleInstanceStorage.ifLoaded(module: ModuleContainer<T>, action: (T) -> Unit) {
-    (loadedMap[module.self]?.instance as T).let(action)
+inline fun <T : Any> ModuleInstanceStorage.ifLoaded(moduleClass: ModuleClass<T>, action: (T) -> Unit) {
+    action(moduleClass.target.self.cast(loadedMap[moduleClass]))
 }
 
 inline fun <reified T : Any> ModuleInstanceStorage.ifLoaded(action: (T) -> Unit) {
-    ifLoaded(T::class.lola.asModule.self, action)
+    ifLoaded(T::class, action)
 }
 
-inline fun <reified T : Any> ModuleInstanceStorage.ifLoaded(module: KClass<T>, action: (T) -> Unit) {
-    ifLoaded(ModuleRegistry[module]) { action(it.instance as T) }
+inline fun <T : Any> ModuleInstanceStorage.ifLoaded(moduleClass: KClass<T>, action: (T) -> Unit) {
+    ifLoaded(moduleClass.lola.asModule, action)
 }

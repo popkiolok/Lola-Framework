@@ -6,12 +6,15 @@ import com.lola.framework.core.decoration.getDecorations
 import java.util.*
 import kotlin.reflect.KClass
 
+val classes: Collection<LClass<*>>
+    get() = classMap.values
+
 internal val instanceToContext: MutableMap<Any, Context> = WeakHashMap()
-internal val classes: MutableMap<KClass<*>, LClass<*>> = WeakHashMap()
+internal val classMap: MutableMap<KClass<*>, LClass<*>> = WeakHashMap()
 
 @Suppress("UNCHECKED_CAST")
 val <T : Any> KClass<T>.lola: LClass<T>
-    get() = classes.computeIfAbsent(this) {
+    get() = classMap.computeIfAbsent(this) {
         val lClass = LClass(this)
         Lola.getDecorations<ResolveClassListener<*>>().forEach { it.onClassFound(lClass) }
         lClass

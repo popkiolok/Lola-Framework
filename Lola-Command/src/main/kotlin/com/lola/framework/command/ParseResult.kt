@@ -10,8 +10,8 @@ class ParseResultSuccess<T>(val value: T, val argLength: Int) : ParseResult {
 class ParseResultFailure(val message: () -> String) : ParseResult
 
 class ParseResultMultiError(
-    val parsed: Map<ArgumentProperty, ParseResultSuccess<*>>,
-    val lastFailed: ArgumentProperty,
+    val parsed: Map<ArgumentReference, ParseResultSuccess<*>>,
+    val lastFailed: ArgumentReference,
     val messages: Iterable<() -> String>
 ) : ParseResult
 

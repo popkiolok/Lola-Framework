@@ -1,17 +1,21 @@
 package com.lola.framework.command
 
-import com.lola.framework.core.LProperty
-import com.lola.framework.core.property.PropertyDecoration
+import com.lola.framework.core.LAnnotatedElement
+import com.lola.framework.core.decoration.Decoration
+import com.lola.framework.core.refType
 import com.lola.framework.core.toJSON
-import com.lola.framework.setting.setting
+import java.lang.IllegalArgumentException
+import kotlin.reflect.KParameter
+import kotlin.reflect.KProperty
 
-class ArgumentProperty(override val self: LProperty, private val holder: ArgumentsContainer) : PropertyDecoration {
+class ArgumentReference(override val target: LAnnotatedElement, private val holder: ArgumentsClass) :
+    Decoration<LAnnotatedElement> {
     val required: Boolean
-        get() = !self.hasDefaultValue
+        get() = target.self.let { if (it is KProperty<*>) it.isLateinit else if (it is KParameter) !it.isOptional else throw IllegalArgumentException() }
     val parsers: MutableList<ArgumentParser> = ArrayList()
 
     init {
-        CommandRegistry.parserAddListeners += this
+        parserAddListeners += this
     }
 
     fun parse(pctx: ParsingContext): ParseResult {
@@ -30,7 +34,7 @@ class ArgumentProperty(override val self: LProperty, private val holder: Argumen
     }
 
     fun onParserAdded(parserFabric: ArgumentParserFabric<*>) {
-        if (parserFabric.canParse(self.type)) {
+        if (parserFabric.canParse(target.self.refType)) {
             parsers += parserFabric.create(holder, this)
         }
     }
@@ -38,12 +42,12 @@ class ArgumentProperty(override val self: LProperty, private val holder: Argumen
     fun getCompletions(
         argsLeftPart: String,
         isLast: Boolean,
-        parsed: Map<ArgumentProperty, ParseResultSuccess<*>>
+        parsed: Map<ArgumentReference, ParseResultSuccess<*>>
     ): List<String> {
         return sortCompletions(argsLeftPart, parsers.flatMap { it.complete(argsLeftPart, isLast, parsed) })
     }
 
     override fun toString(): String {
-        return "[ArgumentProperty/${hashCode()}] ${self.setting?.name}"
+        return "argument for $target"
     }
 }

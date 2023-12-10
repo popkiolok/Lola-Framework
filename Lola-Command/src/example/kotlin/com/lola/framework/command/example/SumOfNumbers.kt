@@ -2,13 +2,14 @@ package com.lola.framework.command.example
 
 import com.lola.framework.command.Command
 import com.lola.framework.command.CommandSystem
-import com.lola.framework.core.kotlin.LolaKotlin
+import com.lola.framework.core.Lola
+import com.lola.framework.core.lola
 import com.lola.framework.setting.Setting
 import java.math.BigDecimal
 
 fun main() {
-    LolaKotlin()
-    CommandSystem().onCommand("sum 100 78.98")
+    Lola.initialize()
+    CommandSystem::class.lola.createInstance().onCommand("sum 100 78.98")
 }
 
 @Command("sum")

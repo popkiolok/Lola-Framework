@@ -1,36 +1,36 @@
 package com.lola.framework.command
 
-import com.lola.framework.core.annotation.findAnnotation
 import com.lola.framework.core.decoration.ResolveClassListener
 import com.lola.framework.core.LClass
-import com.lola.framework.core.container.subscribeAddContainerListener
+import com.lola.framework.core.Lola
+import com.lola.framework.core.decoration.ForAll
+import kotlin.reflect.full.findAnnotation
 import kotlin.reflect.full.isSubclassOf
 
-object CommandRegistry : ResolveClassListener {
-    val parserFabrics: MutableList<ArgumentParserFabric<*>> = ArrayList()
-    val commands: MutableList<CommandContainer> = ArrayList()
-    val parserAddListeners: MutableList<ArgumentProperty> = ArrayList()
+val parserFabrics: MutableList<ArgumentParserFabric<*>> = ArrayList()
+val commands: MutableList<CommandClass> = ArrayList()
+val parserAddListeners: MutableList<ArgumentReference> = ArrayList()
 
-    init {
-        subscribeAddContainerListener(this)
-    }
-
-    override fun onClassFound(container: LClass) {
-        if (container.clazz.isSubclassOf(ArgumentParserFabric::class) && !container.clazz.isAbstract && container.hasDefaultConstructor()) {
-            val argParser = container.createInstance(emptyMap()).instance as ArgumentParserFabric<*>
-            log.debug { "Found argument parser $argParser." }
+@ForAll
+internal class CommandRegistry(override val target: Lola) : ResolveClassListener<Lola> {
+    override fun <T : Any> onClassFound(clazz: LClass<T>) {
+        if (clazz.self.isSubclassOf(ArgumentParserFabric::class) && !clazz.self.isAbstract &&
+            clazz.self.constructors.any { it.parameters.isEmpty() }
+        ) {
+            val argParser = clazz.createInstance(emptyMap()) as ArgumentParserFabric<*>
+            log.debug { "Found argument parser '$argParser'." }
             parserFabrics += argParser
             parserAddListeners.forEach { arg -> arg.onParserAdded(argParser) }
         }
-        val ann = container.findAnnotation<Command>()
+        val ann = clazz.self.findAnnotation<Command>()
         if (ann != null) {
-            if (!container.clazz.isSubclassOf(Runnable::class)) {
+            if (!clazz.self.isSubclassOf(Runnable::class)) {
                 log.error { "Command container should implement interface Runnable." }
                 return
             }
-            val decoration = CommandContainer(ann.name, container)
+            val decoration = CommandClass(clazz as LClass<Runnable>, ann)
             log.info { "Found command $decoration." }
-            container.decorate(decoration)
+            clazz.decorate(decoration)
             commands += decoration
         }
     }

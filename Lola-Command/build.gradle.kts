@@ -28,11 +28,9 @@ dependencies {
     testImplementation("org.apache.logging.log4j:log4j-slf4j2-impl:2.+")
 
     "exampleImplementation"(sourceSets.main.get().runtimeClasspath)
-    "exampleImplementation"("com.lola.framework:Lola-Core-Kotlin:1.0-SNAPSHOT")
     "exampleImplementation"("org.apache.logging.log4j:log4j-slf4j2-impl:2.+")
 
     "jmhImplementation"(sourceSets.main.get().runtimeClasspath)
-    "jmhImplementation"("com.lola.framework:Lola-Core-Kotlin:1.0-SNAPSHOT")
     "jmhImplementation"("org.apache.logging.log4j:log4j-slf4j2-impl:2.+")
     "jmhImplementation"("org.openjdk.jmh:jmh-core:+")
     "jmhImplementation"("org.openjdk.jmh:jmh-generator-annprocess:+")

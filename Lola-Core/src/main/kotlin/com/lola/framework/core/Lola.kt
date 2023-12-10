@@ -5,10 +5,9 @@ import com.lola.framework.core.decoration.*
 import org.reflections.Reflections
 import org.reflections.scanners.Scanners
 import org.reflections.util.ConfigurationBuilder
+import java.io.PrintStream
 import java.util.ArrayList
 import kotlin.reflect.*
-import kotlin.reflect.full.memberFunctions
-import kotlin.reflect.full.memberProperties
 
 object Lola : Decorated(), DecorateListener<Lola>, DecorateClassListener<Lola>, DecorateConstructorListener<Lola>,
     DecorateMemberListener<Lola>, DecorateParameterListener<Lola> {
@@ -39,12 +38,26 @@ object Lola : Decorated(), DecorateListener<Lola>, DecorateClassListener<Lola>, 
         }
     }
 
+    fun printInfo(stream: PrintStream = System.out) {
+        val printFor = { name: String, vs: Map<*, Decorated> ->
+            val d = vs.values.count { it: Decorated -> it.hasDecoration<Decoration<*>>() }
+            val nd = vs.values.sumOf { it: Decorated -> it.getDecorations<Decoration<*>>().size }
+            stream.println("$name: ${vs.size} total, $d decorated, $nd decorations.")
+        }
+        stream.println("-------------------- Lola Framework Info --------------------")
+        printFor("Classes", classMap)
+        printFor("Callables", callables)
+        printFor("Parameters", parameters)
+        stream.println("Objects with context: ${instanceToContext.size} total.")
+        stream.println("-------------------------------------------------------------")
+    }
+
     fun <T : Decoration<*>> hasDecoratedClasses(decoration: KClass<T>): Boolean {
-        return classes.values.any { it.hasDecoration(decoration) }
+        return classMap.values.any { it.hasDecoration(decoration) }
     }
 
     fun <T : Decoration<*>> getDecoratedClasses(decoration: KClass<T>): Sequence<T> {
-        return classes.values.asSequence().mapNotNull { it.getDecorations(decoration).firstOrNull() }
+        return classMap.values.asSequence().mapNotNull { it.getDecorations(decoration).firstOrNull() }
     }
 
     inline fun <reified T : Decoration<*>> hasDecoratedClasses(): Boolean = hasDecoratedClasses(T::class)
@@ -60,9 +73,12 @@ object Lola : Decorated(), DecorateListener<Lola>, DecorateClassListener<Lola>, 
         get() = this
 
     override fun onDecorated(decoration: Decoration<Lola>) {
-        classes.values.forEach { (it as LClass<Any>).onDecorated(decoration as Decoration<LClass<Any>>) }
+        classMap.values.forEach { (it as LClass<Any>).onDecorated(decoration as Decoration<LClass<Any>>) }
         if (decoration is ResolveClassListener<Lola>) {
-            classes.values.forEach { decoration.onClassFound(it) }
+            classMap.values.forEach { decoration.onClassFound(it) }
+        }
+        if (decoration is ResolveLolaListener<Lola>) {
+            decoration.onLolaFound(this)
         }
     }
 

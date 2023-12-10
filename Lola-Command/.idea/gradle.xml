@@ -12,11 +12,6 @@
                   <project path="$PROJECT_DIR$/../Lola-Core" />
                 </projects>
               </build>
-              <build path="$PROJECT_DIR$/../Lola-Core-Kotlin" name="Lola-Core-Kotlin">
-                <projects>
-                  <project path="$PROJECT_DIR$/../Lola-Core-Kotlin" />
-                </projects>
-              </build>
               <build path="$PROJECT_DIR$/../Lola-Module" name="Lola-Module">
                 <projects>
                   <project path="$PROJECT_DIR$/../Lola-Module" />
@@ -35,12 +30,12 @@
           <set>
             <option value="$PROJECT_DIR$" />
             <option value="$PROJECT_DIR$/../Lola-Core" />
-            <option value="$PROJECT_DIR$/../Lola-Core-Kotlin" />
             <option value="$PROJECT_DIR$/../Lola-Module" />
             <option value="$PROJECT_DIR$/../Lola-Setting" />
           </set>
         </option>
       </GradleProjectSettings>
     </option>
+    <option name="offlineMode" value="true" />
   </component>
 </project>

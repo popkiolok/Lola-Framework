@@ -1,15 +1,16 @@
 package com.lola.framework.command
 
-import com.lola.framework.core.LType
+import com.lola.framework.core.refType
+import kotlin.reflect.KType
 
 interface ArgumentParserFabric<T : ArgumentParser> {
-    fun canParse(type: LType): Boolean
+    fun canParse(type: KType): Boolean
 
-    fun create(argsContainer: ArgumentsContainer, argument: ArgumentProperty): T {
-        return create(argument.self.type)!!
+    fun create(argsContainer: ArgumentsClass, argument: ArgumentReference): T {
+        return create(argument.target.self.refType)!!
     }
 
-    fun create(argumentType: LType): T? {
+    fun create(argumentType: KType): T? {
         return null
     }
 }

@@ -16,13 +16,13 @@ annotation class ForAll
 @ForAnnotated(ForAll::class)
 class ForAllDecorator<T : Decoration<*>>(target: LClass<T>) : DecorationClass<T>(target) {
     init {
-        Lola.decorate(object : ResolveElementListener<Lola> {
+        Lola.decorate(object : ResolveDecoratedListener<Lola> {
             override val target: Lola
                 get() = Lola
 
-            override fun onElementFound(element: LAnnotatedElement) {
-                if (element::class.isSubclassOf(targetParam.self.type.jvmErasure)) {
-                    element.decorate(target.createInstance { it["DecorationTarget"] = element })
+            override fun onDecoratedFound(decorated: Decorated) {
+                if (decorated::class.isSubclassOf(targetParam.self.type.jvmErasure)) {
+                    decorated.decorate(target.createInstance { it["DecorationTarget"] = decorated })
                 }
             }
         })

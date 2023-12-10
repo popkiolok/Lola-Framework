@@ -2,14 +2,15 @@ package com.lola.framework.command.example
 
 import com.lola.framework.command.Command
 import com.lola.framework.command.CommandSystem
-import com.lola.framework.core.kotlin.LolaKotlin
+import com.lola.framework.core.Lola
+import com.lola.framework.core.lola
 import com.lola.framework.setting.Setting
 import java.math.BigDecimal
 import java.math.MathContext
 
 fun main() {
-    LolaKotlin()
-    val cs = CommandSystem()
+    Lola.initialize()
+    val cs = CommandSystem::class.lola.createInstance()
     cs.onCommand("length 6 8")
     cs.onCommand("length 78 56 78")
 }

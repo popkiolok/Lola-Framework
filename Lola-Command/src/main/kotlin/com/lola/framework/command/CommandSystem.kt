@@ -1,15 +1,16 @@
 package com.lola.framework.command
 
-import com.lola.framework.core.container.context.Auto
-import com.lola.framework.core.container.context.Context
+import com.lola.framework.core.LParameter
+import com.lola.framework.core.context.Auto
+import com.lola.framework.core.context.Context
 import com.lola.framework.module.Module
 import com.lola.framework.setting.Setting
 import org.apache.commons.text.similarity.LevenshteinDistance
+import kotlin.reflect.KParameter
+import kotlin.reflect.KProperty
 
-@Module(group = "Lola-Command", path = "Command System")
+@Module("Lola-Command:Command System")
 class CommandSystem(
-    @Auto private val context: Context,
-
     @Setting("Info Output")
     var info: (String) -> Unit = { log.info { it } },
 
@@ -20,7 +21,10 @@ class CommandSystem(
     var warn: (String) -> Unit = { log.warn { it } },
 
     @Setting("Error Output")
-    var error: (String) -> Unit = { log.error { it } }
+    var error: (String) -> Unit = { log.error { it } },
+
+    @Auto
+    private val context: Context,
 ) {
 
     @Suppress("UNCHECKED_CAST")
@@ -32,15 +36,14 @@ class CommandSystem(
                 log.trace { "Parsing arguments $args." }
                 val parsedArgs = cmd.orderedArgs.parseAsMap(args, context)
                 if (parsedArgs is ParseResultSuccess<*>) {
-                    val map = parsedArgs.value as Map<ArgumentProperty, ParseResultSuccess<*>>
-                    val propValues = map.mapKeys { it.key.self }.mapValues { it.value.value }
-                    val paramValues =
-                        propValues.flatMap { (prop, value) -> prop.parameters.map { it to value } }.toMap()
+                    val (params, props) = (parsedArgs.value as Map<ArgumentReference, ParseResultSuccess<*>>).entries.partition { it.key.target is LParameter }
+                    val propValues = props.associate { it.key.target.self as KProperty<*> to it.value.value }
+                    val paramValues = params.associate { it.key.target.self as KParameter to it.value.value }
                     log.trace { "Running command $cmd." }
-                    val ci = cmd.self.createInstance(paramValues, propValues, ctxInitializer = { ctx ->
+                    val inst = cmd.target.createInstance(paramValues, propValues, ctxInitializer = { ctx ->
                         ctx.parents += context
-                    })
-                    (ci.instance as Runnable).run()
+                    }) as Runnable
+                    inst.run()
                 } else if (parsedArgs is ParseResultMultiError) {
                     error("Unable to parse command arguments: ")
                     parsedArgs.messages.forEach { error(it()) }
@@ -55,17 +58,17 @@ class CommandSystem(
         }
     }
 
-    private fun extractArgs(command: String, cmd: CommandContainer) =
-        if (command.length == cmd.name.length) "" else command.substring(cmd.name.length + 1)
+    private fun extractArgs(command: String, cmd: CommandClass) =
+        if (command.length == cmd.data.name.length) "" else command.substring(cmd.data.name.length + 1)
 
-    private fun getCommand(command: String) = CommandRegistry.commands.find {
-        command.startsWith(it.name) && (command.length == it.name.length || command[it.name.length] == ' ')
+    private fun getCommand(command: String) = commands.find {
+        command.startsWith(it.data.name) && (command.length == it.data.name.length || command[it.data.name.length] == ' ')
     }
 
     fun getCompletions(commandPart: String): List<Completion> {
         val cmdLowerCase = commandPart.lowercase()
-        val commandNames = CommandRegistry.commands.asSequence()
-            .map { it.name.lowercase() }
+        val commandNames = commands.asSequence()
+            .map { it.data.name.lowercase() }
             .filter { it.startsWith(cmdLowerCase) }
             .sortedBy { LevenshteinDistance.getDefaultInstance().apply(cmdLowerCase, it) }.toList()
         if (commandNames.isEmpty()) {
@@ -77,7 +80,7 @@ class CommandSystem(
         }
     }
 
-    private fun getCompletionsFor(args: String, cmd: CommandContainer, offset: Int): List<Completion> {
+    private fun getCompletionsFor(args: String, cmd: CommandClass, offset: Int): List<Completion> {
         val parseResult = cmd.orderedArgs.parseAsMap(args, context)
         return if (parseResult is ParseResultMultiError) {
             parseResult.lastFailed.getCompletions(

@@ -1,30 +1,11 @@
 package com.lola.framework.setting
 
 import com.lola.framework.core.*
-import com.lola.framework.core.annotation.findAnnotation
-import com.lola.framework.core.container.*
-import com.lola.framework.core.container.decorations.AddPropertyListener
-import com.lola.framework.core.LParameter
-import com.lola.framework.core.LProperty
-import com.lola.framework.core.util.Path
-import com.lola.framework.core.util.emptyPath
 
 /**
  * Registers [SettingProperty]s for container and provides access to their values.
  */
-class SettingContainer(override val self: LClass) : ContainerDecoration,
-    AddPropertyListener {
-
-    val settings: List<SettingProperty> = ArrayList()
-
-    override fun onPropertyAdded(property: LProperty) {
-        val setting = property.findAnnotation<Setting>()
-        if (setting != null) {
-            val sett = SettingProperty(property, setting.name, setting.info)
-            property.decorate(sett)
-            (settings as ArrayList) += sett
-        }
-    }
+/*class SettingContainer(override val self: LClass) : Decoration<Con{
 
     /**
      * Recursively retrieves a flat map of all setting values in the container and its super containers.
@@ -203,4 +184,4 @@ class SettingContainer(override val self: LClass) : ContainerDecoration,
         }
         return newContainer.createInstance(params)
     }
-}
+}*/

@@ -1,10 +1,7 @@
 package com.lola.framework.core
 
 import com.lola.framework.core.decoration.Decorated
-import kotlin.reflect.KAnnotatedElement
-import kotlin.reflect.KCallable
-import kotlin.reflect.KParameter
-import kotlin.reflect.KType
+import kotlin.reflect.*
 
 /**
  * Lola API extension for Kotlin's reflection [KAnnotatedElement], that makes it [Decorated], allowing associating

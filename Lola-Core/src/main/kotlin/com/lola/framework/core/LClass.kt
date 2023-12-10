@@ -3,6 +3,7 @@ package com.lola.framework.core
 import com.lola.framework.core.context.Context
 import com.lola.framework.core.decoration.*
 import kotlin.reflect.*
+import kotlin.reflect.full.memberExtensionProperties
 import kotlin.reflect.full.memberFunctions
 import kotlin.reflect.full.memberProperties
 

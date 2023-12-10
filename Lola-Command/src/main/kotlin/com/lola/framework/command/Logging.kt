@@ -2,4 +2,4 @@ package com.lola.framework.command
 
 import io.github.oshai.kotlinlogging.KotlinLogging
 
-val log = KotlinLogging.logger("Lola-Command")
+internal val log = KotlinLogging.logger("Lola-Command")

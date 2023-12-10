@@ -6,10 +6,10 @@ import com.lola.framework.core.decoration.getDecoration
 import com.lola.framework.core.decoration.hasDecoration
 
 val <T : Any> LClass<T>.isModule: Boolean
-    get() = hasDecoration<ModuleContainer<T>>()
+    get() = hasDecoration<ModuleClass<T>>()
 
-val <T : Any> LClass<T>.asModule: ModuleContainer<T>
-    get() = getDecoration<ModuleContainer<T>>()
+val <T : Any> LClass<T>.asModule: ModuleClass<T>
+    get() = getDecoration<ModuleClass<T>>()
 
 val Context.mis: ModuleInstanceStorage
     get() = this[ModuleInstanceStorage::class]

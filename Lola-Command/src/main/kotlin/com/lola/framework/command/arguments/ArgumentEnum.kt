@@ -1,17 +1,17 @@
 package com.lola.framework.command.arguments
 
 import com.lola.framework.command.*
-import com.lola.framework.core.LType
+import com.lola.framework.core.refType
+import kotlin.reflect.KType
 import kotlin.reflect.full.isSubclassOf
+import kotlin.reflect.jvm.jvmErasure
 
 class ArgumentEnumFabric : ArgumentParserFabric<ArgumentEnum> {
 
-    override fun canParse(type: LType): Boolean {
-        return type.clazz.isSubclassOf(Enum::class)
-    }
+    override fun canParse(type: KType) = type.jvmErasure.isSubclassOf(Enum::class)
 
-    override fun create(argsContainer: ArgumentsContainer, argument: ArgumentProperty): ArgumentEnum {
-        return ArgumentEnum(argument.self.type.clazz.java.asSubclass(Enum::class.java).enumConstants)
+    override fun create(argsContainer: ArgumentsClass, argument: ArgumentReference): ArgumentEnum {
+        return ArgumentEnum(argument.target.self.refType.jvmErasure.java.asSubclass(Enum::class.java).enumConstants)
     }
 }
 

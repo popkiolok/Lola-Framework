@@ -14,7 +14,7 @@ interface ArgumentParser {
         return complete(argsLeft)
     }
 
-    fun complete(argsLeft: String, isLast: Boolean, parsed: Map<ArgumentProperty, ParseResultSuccess<*>>): List<String> {
+    fun complete(argsLeft: String, isLast: Boolean, parsed: Map<ArgumentReference, ParseResultSuccess<*>>): List<String> {
         return complete(argsLeft, isLast)
     }
 }

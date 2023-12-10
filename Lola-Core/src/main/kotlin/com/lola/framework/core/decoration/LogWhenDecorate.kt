@@ -21,7 +21,7 @@ import kotlin.reflect.full.isSubclassOf
 annotation class LogWhenDecorate(
     val logger: String,
     val level: Level = Level.INFO,
-    val pattern: String = "Found '{decoration}' '{target}'."
+    val pattern: String = "Found {decoration} ({target})."
 )
 
 /**

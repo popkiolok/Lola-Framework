@@ -6,6 +6,18 @@ import kotlin.reflect.KFunction
 import kotlin.reflect.KProperty
 import kotlin.reflect.KProperty1
 
+interface ResolveDecoratedListener<T : Decorated> : ResolveElementListener<T>, ResolveLolaListener<T> {
+    fun onDecoratedFound(decorated: Decorated)
+
+    override fun onLolaFound(lola: Lola) {
+        onDecoratedFound(lola)
+    }
+
+    override fun onElementFound(element: LAnnotatedElement) {
+        onDecoratedFound(element)
+    }
+}
+
 interface ResolveElementListener<T : Decorated> : ResolveClassListener<T>, ResolveConstructorListener<T>,
     ResolveCallableListener<T>, ResolveParameterListener<T> {
     fun onElementFound(element: LAnnotatedElement)
@@ -25,6 +37,10 @@ interface ResolveElementListener<T : Decorated> : ResolveClassListener<T>, Resol
     override fun onParameterFound(parameter: LParameter) {
         onElementFound(parameter)
     }
+}
+
+interface ResolveLolaListener<T : Decorated> : Decoration<T> {
+    fun onLolaFound(lola: Lola)
 }
 
 interface ResolveClassListener<T : Decorated> : Decoration<T> {

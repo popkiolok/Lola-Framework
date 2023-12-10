@@ -4,7 +4,7 @@ import com.lola.framework.module.Module
 import com.lola.framework.setting.Setting
 import it.unimi.dsi.fastutil.objects.Reference2ObjectOpenHashMap
 
-@Module(group = "Lola-Event", path = "EventSystem", info = "Stores active event listeners and allows to call events.")
+@Module(name = "Lola-Event:EventSystem", info = "Stores active event listeners and allows to call events.")
 class EventSystem(
     @Setting("Listener Exception Handler", info = "Action that handles listener execution exception.")
     val errorAction: (Throwable) -> Unit = { it.printStackTrace() }
@@ -36,10 +36,10 @@ class EventSystem(
             while (iterator.hasNext()) {
                 val (instance, listener) = iterator.next()
                 try {
-                    if (listener.target.parameters.size == 2) {
-                        listener.target.call(instance, eventObject)
+                    if (listener.target.self.parameters.size == 2) {
+                        listener.target.self.call(instance, eventObject)
                     } else {
-                        listener.target.call(instance, eventObject, callback)
+                        listener.target.self.call(instance, eventObject, callback)
                         if (callback.requestDetach) {
                             iterator.remove()
                             callback.requestDetach = false
@@ -70,10 +70,10 @@ class EventSystem(
             while (iterator.hasNext()) {
                 val (instance, listener) = iterator.next()
                 try {
-                    if (listener.target.parameters.size == 1) {
-                        listener.target.call(instance)
+                    if (listener.target.self.parameters.size == 1) {
+                        listener.target.self.call(instance)
                     } else {
-                        listener.target.call(instance, callback)
+                        listener.target.self.call(instance, callback)
                         if (callback.requestDetach) {
                             iterator.remove()
                             callback.requestDetach = false
