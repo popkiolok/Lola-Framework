@@ -18,6 +18,11 @@ val Module.simpleName: String
 @LogWhenDecorate(logger = "Lola-Module", pattern = "Found {decoration}")
 @ForAnnotated(Module::class)
 class ModuleClass<T : Any>(override val target: LClass<T>, val data: Module) : Decoration<LClass<T>> {
+    init {
+        ((modulesByGroup as HashMap).computeIfAbsent(data.group) { ArrayList() } as ArrayList).add(this)
+        (modulesByName as HashMap)[data.name] = this
+    }
+
     override fun toString(): String {
         return "module ${data.name}"
     }

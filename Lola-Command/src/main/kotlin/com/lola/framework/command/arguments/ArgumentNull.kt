@@ -9,7 +9,7 @@ class ArgumentNull : ArgumentWord() {
     override fun canParse(type: KType) = type.isMarkedNullable
 
     override fun parse(pctx: ParsingContext): ParseResult {
-        val (word, argLength) = super.parseAsString(pctx.argsLeft)
+        val (word, argLength) = super.parseAsString(pctx.input)
         if (word.equals("-", ignoreCase = true) || word.equals("null", ignoreCase = true) ||
             word.equals("nil", ignoreCase = true)
         )

@@ -8,42 +8,42 @@ import kotlin.reflect.jvm.jvmErasure
 
 class ArgumentByte : SingletonArgumentParser {
     override fun canParse(type: KType) = type.jvmErasure == Byte::class
-    override fun parse(pctx: ParsingContext) = parse(pctx.argsLeft) { it.toByte() }
+    override fun parse(pctx: ParsingContext) = parse(pctx.input) { it.toByte() }
 }
 
 class ArgumentShort : SingletonArgumentParser {
     override fun canParse(type: KType) = type.jvmErasure == Short::class
-    override fun parse(pctx: ParsingContext) = parse(pctx.argsLeft) { it.toShort() }
+    override fun parse(pctx: ParsingContext) = parse(pctx.input) { it.toShort() }
 }
 
 class ArgumentInt : SingletonArgumentParser {
     override fun canParse(type: KType) = type.jvmErasure == Int::class
-    override fun parse(pctx: ParsingContext) = parse(pctx.argsLeft) { it.toInt() }
+    override fun parse(pctx: ParsingContext) = parse(pctx.input) { it.toInt() }
 }
 
 class ArgumentLong : SingletonArgumentParser {
     override fun canParse(type: KType) = type.jvmErasure == Long::class
-    override fun parse(pctx: ParsingContext) = parse(pctx.argsLeft) { it.toLong() }
+    override fun parse(pctx: ParsingContext) = parse(pctx.input) { it.toLong() }
 }
 
 class ArgumentBigInteger : SingletonArgumentParser {
     override fun canParse(type: KType) = type.jvmErasure == BigInteger::class
-    override fun parse(pctx: ParsingContext) = parse(pctx.argsLeft) { it.toBigInteger() }
+    override fun parse(pctx: ParsingContext) = parse(pctx.input) { it.toBigInteger() }
 }
 
 class ArgumentFloat : SingletonArgumentParser {
     override fun canParse(type: KType) = type.jvmErasure == Float::class
-    override fun parse(pctx: ParsingContext) = parse(pctx.argsLeft) { it.toFloat() }
+    override fun parse(pctx: ParsingContext) = parse(pctx.input) { it.toFloat() }
 }
 
 class ArgumentDouble : SingletonArgumentParser {
     override fun canParse(type: KType) = type.jvmErasure == Double::class
-    override fun parse(pctx: ParsingContext) = parse(pctx.argsLeft) { it.toDouble() }
+    override fun parse(pctx: ParsingContext) = parse(pctx.input) { it.toDouble() }
 }
 
 class ArgumentBigDecimal : SingletonArgumentParser {
     override fun canParse(type: KType) = type.jvmErasure == BigDecimal::class
-    override fun parse(pctx: ParsingContext) = parse(pctx.argsLeft) { it.toBigDecimal() }
+    override fun parse(pctx: ParsingContext) = parse(pctx.input) { it.toBigDecimal() }
 }
 
 private inline fun parse(argsLeft: String, parser: (String) -> Number): ParseResult {

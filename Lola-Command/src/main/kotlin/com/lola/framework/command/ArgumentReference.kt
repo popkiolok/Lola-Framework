@@ -2,6 +2,7 @@ package com.lola.framework.command
 
 import com.lola.framework.core.LAnnotatedElement
 import com.lola.framework.core.decoration.Decoration
+import com.lola.framework.core.name
 import com.lola.framework.core.refType
 import com.lola.framework.core.toJSON
 import java.lang.IllegalArgumentException
@@ -48,6 +49,6 @@ class ArgumentReference(override val target: LAnnotatedElement, private val hold
     }
 
     override fun toString(): String {
-        return "argument for $target"
+        return "argument ${target.self.name}"
     }
 }

@@ -29,7 +29,7 @@ internal class CommandRegistry(override val target: Lola) : ResolveClassListener
                 return
             }
             val decoration = CommandClass(clazz as LClass<Runnable>, ann)
-            log.info { "Found command $decoration." }
+            log.info { "Found $decoration." }
             clazz.decorate(decoration)
             commands += decoration
         }

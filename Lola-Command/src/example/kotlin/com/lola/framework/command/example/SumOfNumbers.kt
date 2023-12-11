@@ -10,6 +10,7 @@ import java.math.BigDecimal
 fun main() {
     Lola.initialize()
     CommandSystem::class.lola.createInstance().onCommand("sum 100 78.98")
+    Lola.printInfo()
 }
 
 @Command("sum")

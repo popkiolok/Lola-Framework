@@ -16,6 +16,7 @@ dependencies {
     implementation("com.lola.framework:Lola-Module:1.0-SNAPSHOT")
     implementation("com.lola.framework:Lola-Setting:1.0-SNAPSHOT")
 
+    implementation("org.jetbrains.kotlin:kotlin-reflect:1.+")
     implementation("io.github.oshai:kotlin-logging-jvm:5.+")
     implementation("org.slf4j:slf4j-api:2.+")
     implementation("it.unimi.dsi:fastutil:8.5.12")

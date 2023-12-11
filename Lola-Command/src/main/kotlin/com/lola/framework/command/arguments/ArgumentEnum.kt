@@ -18,7 +18,7 @@ class ArgumentEnumFabric : ArgumentParserFabric<ArgumentEnum> {
 class ArgumentEnum(private val constants: Array<out Enum<*>>) : ArgumentWord() {
 
     override fun parse(pctx: ParsingContext): ParseResult {
-        val asWord = super.parseAsString(pctx.argsLeft)
+        val asWord = super.parseAsString(pctx.input)
         return constants.find { it.name.equals(asWord.value, ignoreCase = true) }.let { enumValue ->
             if (enumValue == null) {
                 ParseResultFailure { "Variant '${asWord.value}' does not exist. Allowed variants: '${constants.joinToString { it.name }}'." }

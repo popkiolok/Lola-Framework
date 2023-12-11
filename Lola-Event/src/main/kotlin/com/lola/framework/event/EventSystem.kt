@@ -17,9 +17,8 @@ class EventSystem(
 
     /**
      * Currently attached (active) event listeners. Event name to listeners for this event multimap.
-     * Event name **must** be interned string.
      */
-    internal val attached: MutableMap<String, MutableCollection<Pair<Any, ListenerFunction>>> = Reference2ObjectOpenHashMap()
+    internal val attached: MutableMap<String, MutableCollection<Pair<Any, ListenerFunction>>> = HashMap()
 
     /**
      * Call event listeners of the event.

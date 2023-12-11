@@ -40,12 +40,12 @@ class OrderedArgumentSequenceFabric(override val target: Lola = Lola) : Argument
 class OrderedArgumentSequence(private val argsContainer: ArgumentsClass) : ArgumentParser {
 
     override fun parse(pctx: ParsingContext): ParseResult {
-        val startWithBracket = pctx.argsLeft.startsWith('(')
+        val startWithBracket = pctx.input.startsWith('(')
         val resultAsMap = if (pctx.isLast && !startWithBracket) {
-            parseAsMap(pctx.argsLeft, pctx.context)
+            parseAsMap(pctx.input, pctx.context)
         } else {
-            if (startWithBracket && pctx.argsLeft.contains(')')) {
-                val argStr = extractBracketsContent(pctx.argsLeft, '(', ')')
+            if (startWithBracket && pctx.input.contains(')')) {
+                val argStr = extractBracketsContent(pctx.input, '(', ')')
                 parseAsMap(argStr, pctx.context)
             } else {
                 return ParseResultFailure { "OrderedArgumentSequence as argument not last in arguments list should be in '(' ')'." }

@@ -10,11 +10,11 @@ class ArgumentBoolean : SingletonArgumentParser {
     override fun canParse(type: KType) = type.jvmErasure == Boolean::class
 
     override fun parse(pctx: ParsingContext): ParseResult {
-        val word = pctx.argsLeft.substringBefore(' ')
+        val word = pctx.input.substringBefore(' ')
         return if (yesVariants.any { word.equals(it, ignoreCase = true) }) {
-            ParseResultSuccess(true, (word.length + 1).coerceAtMost(pctx.argsLeft.length))
+            ParseResultSuccess(true, (word.length + 1).coerceAtMost(pctx.input.length))
         } else if (noVariants.any { word.equals(it, ignoreCase = true) }) {
-            ParseResultSuccess(false, (word.length + 1).coerceAtMost(pctx.argsLeft.length))
+            ParseResultSuccess(false, (word.length + 1).coerceAtMost(pctx.input.length))
         } else failureResult
     }
 

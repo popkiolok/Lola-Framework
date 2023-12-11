@@ -6,6 +6,7 @@ import org.reflections.Reflections
 import org.reflections.scanners.Scanners
 import org.reflections.util.ConfigurationBuilder
 import java.io.PrintStream
+import java.lang.reflect.Modifier
 import java.util.ArrayList
 import kotlin.reflect.*
 
@@ -31,7 +32,10 @@ object Lola : Decorated(), DecorateListener<Lola>, DecorateClassListener<Lola>, 
                 *Array(packages.size) { i -> packages[i].name }).setScanners(Scanners.SubTypes.filterResultsBy { true })
         )
         reflections.getSubTypesOf(Any::class.java).forEach {
-            runCatching { it.kotlin.lola }.onFailure { it.printStackTrace() }
+            if (!it.isSynthetic && !it.isAnonymousClass && !Modifier.isPrivate(it.modifiers) &&
+                !it.name.endsWith("Kt") && !it.name.endsWith("\$DefaultImpls")) {
+                runCatching { it.kotlin.lola }.onFailure { e -> e.printStackTrace() }
+            }
         }
         ForAnnotatedDecorator::class.lola.let {
             it.decorate(ForAnnotatedDecorator(it, ForAnnotated(ForAnnotated::class)))

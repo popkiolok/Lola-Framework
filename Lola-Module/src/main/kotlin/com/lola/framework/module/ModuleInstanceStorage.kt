@@ -3,6 +3,8 @@ package com.lola.framework.module
 import com.lola.framework.core.context.Context
 import com.lola.framework.core.lola
 import kotlin.reflect.KClass
+import kotlin.reflect.KParameter
+import kotlin.reflect.KProperty
 import kotlin.reflect.cast
 
 /**
@@ -22,9 +24,13 @@ class ModuleInstanceStorage(val ctxInitializer: (Context) -> Unit = {}) {
     /**
      * Creates new instance for [moduleClass] if the module is not loaded and returns this instance.
      */
-    fun <T : Any> load(moduleClass: ModuleClass<T>): T {
+    fun <T : Any> load(
+        moduleClass: ModuleClass<T>,
+        params: Map<KParameter, Any?> = emptyMap(),
+        propertyValues: Map<KProperty<*>, Any?> = emptyMap()
+    ): T {
         return loadedMap[moduleClass]?.let { moduleClass.target.self.cast(it) } ?: run {
-            val inst = moduleClass.target.createInstance(ctxInitializer = { ctx ->
+            val inst = moduleClass.target.createInstance(params, propertyValues, ctxInitializer = { ctx ->
                 ctx.register { this }
                 ctxInitializer(ctx)
             })
@@ -57,7 +63,7 @@ class ModuleInstanceStorage(val ctxInitializer: (Context) -> Unit = {}) {
 }
 
 inline fun <T : Any> ModuleInstanceStorage.ifLoaded(moduleClass: ModuleClass<T>, action: (T) -> Unit) {
-    action(moduleClass.target.self.cast(loadedMap[moduleClass]))
+    loadedMap[moduleClass]?.let { action(moduleClass.target.self.cast(it)) }
 }
 
 inline fun <reified T : Any> ModuleInstanceStorage.ifLoaded(action: (T) -> Unit) {

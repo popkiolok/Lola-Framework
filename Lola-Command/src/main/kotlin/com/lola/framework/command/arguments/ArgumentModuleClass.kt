@@ -12,7 +12,7 @@ class ArgumentModuleClass : ArgumentString() {
     override fun canParse(type: KType) = type.jvmErasure == ModuleClass::class
 
     override fun parse(pctx: ParsingContext): ParseResult {
-        val asString = (super.parseAsString(pctx.argsLeft, pctx.isLast))
+        val asString = (super.parseAsString(pctx.input, pctx.isLast))
         val name = asString.value
         val module = modulesByName[name] ?: modulesByName.entries.firstOrNull { (n, _) ->
                 name.equals(n, ignoreCase = true) || name.equals(n.replace(" ", ""), ignoreCase = true)

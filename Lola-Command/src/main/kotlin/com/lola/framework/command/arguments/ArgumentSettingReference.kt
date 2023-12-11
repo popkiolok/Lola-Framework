@@ -1,38 +1,45 @@
 package com.lola.framework.command.arguments
 
 import com.lola.framework.command.*
+import com.lola.framework.core.constructorsParameters
+import com.lola.framework.core.decoration.getDecorations
+import com.lola.framework.core.lola
+import com.lola.framework.core.refType
 import com.lola.framework.module.ModuleClass
-import com.lola.framework.setting.SettingProperty
+import com.lola.framework.setting.SettingReference
 import kotlin.reflect.KType
 import kotlin.reflect.jvm.jvmErasure
 
-class ArgumentSettingPropertyFabric : ArgumentParserFabric<ArgumentSettingProperty> {
-    override fun canParse(type: KType) = type.jvmErasure == SettingProperty::class
+class ArgumentSettingPropertyFabric : ArgumentParserFabric<ArgumentSettingReference> {
+    override fun canParse(type: KType) = type.jvmErasure == SettingReference::class
 
-    override fun create(argsContainer: ArgumentsClass, argument: ArgumentReference): ArgumentSettingProperty {
+    override fun create(argsContainer: ArgumentsClass, argument: ArgumentReference): ArgumentSettingReference {
         val index = argsContainer.arguments.indexOf(argument)
         assert(index >= 0)
         val before = argsContainer.arguments.subList(0, index)
         val associatedModuleArg = before.asSequence()
-            .filter { arg -> arg.parsers.any { it is ArgumentModuleClass } }
+            .filter { arg -> arg.target.self.refType.jvmErasure == ModuleClass::class }
             .withIndex()
             .minByOrNull { index - it.index }?.value
         if (associatedModuleArg == null) {
-            log.error { "No ModuleContainer argument present before SettingProperty argument in arguments list '${before.joinToString()}' for argument '$argument'." }
+            log.error { "No ModuleClass argument present before SettingProperty argument in arguments list '${before.joinToString()}' for argument '$argument'." }
             throw IllegalStateException()
         }
-        return ArgumentSettingProperty(associatedModuleArg)
+        return ArgumentSettingReference(associatedModuleArg)
     }
 }
 
-class ArgumentSettingProperty(private val associatedModuleArg: ArgumentReference) : ArgumentString() {
-    override fun canParse(type: KType) = type.jvmErasure == SettingProperty::class
+class ArgumentSettingReference(private val associatedModuleArg: ArgumentReference) : ArgumentString() {
+    override fun canParse(type: KType) = type.jvmErasure == SettingReference::class
 
     override fun parse(pctx: ParsingContext): ParseResult {
         val moduleClass = pctx.parsed[associatedModuleArg]?.value as ModuleClass<*>
-        val asString = super.parseAsString(pctx.argsLeft, pctx.isLast)
+        val asString = super.parseAsString(pctx.input, pctx.isLast)
         val name = asString.value
-        val settings = moduleClass.target.getDecoratedMembers<SettingProperty>()
+        val settings = moduleClass.target.getDecoratedMembers<SettingReference>().toMutableList()
+        moduleClass.target.self.constructorsParameters.mapNotNull {
+            it.lola.getDecorations<SettingReference>().firstOrNull()
+        }.filter { settings.none { s -> it.data.name == s.data.name } }.forEach { settings += it }
         val sett = settings.firstOrNull {
             name.equals(it.data.name, ignoreCase = true) ||
                     name.equals(it.data.name.replace(" ", ""), ignoreCase = true)
@@ -56,7 +63,9 @@ class ArgumentSettingProperty(private val associatedModuleArg: ArgumentReference
     ): List<String> {
         val moduleClass = parsed[associatedModuleArg]?.value as ModuleClass<*>
         val asString = super.parseAsString(argsLeft, isLast)
-        return sortCompletions(asString.value,
-            moduleClass.target.getDecoratedMembers<SettingProperty>().map { it.data.name }.asIterable())
+        return sortCompletions(
+            asString.value,
+            moduleClass.target.getDecoratedMembers<SettingReference>().map { it.data.name }.asIterable()
+        )
     }
 }

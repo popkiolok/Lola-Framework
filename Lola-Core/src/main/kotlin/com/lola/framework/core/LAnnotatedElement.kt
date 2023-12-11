@@ -31,3 +31,11 @@ val KAnnotatedElement.refType: KType
         is KCallable<*> -> returnType
         else -> throw IllegalStateException("'$this' is not KParameter or KCallable.")
     }
+
+val KAnnotatedElement.name: String?
+    get() = when (this) {
+        is KParameter -> name
+        is KCallable<*> -> name
+        is KClass<*> -> qualifiedName
+        else -> throw IllegalStateException("'$this' is not KParameter or KCallable.")
+    }

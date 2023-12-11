@@ -11,7 +11,7 @@ open class ArgumentString : SingletonArgumentParser {
     override fun canParse(type: KType) = type.jvmErasure == String::class
 
     override fun parse(pctx: ParsingContext): ParseResult {
-        return parseAsString(pctx.argsLeft, pctx.isLast)
+        return parseAsString(pctx.input, pctx.isLast)
     }
 
     protected fun parseAsString(argsLeft: String, isLast: Boolean): ParseResultSuccess<String> {

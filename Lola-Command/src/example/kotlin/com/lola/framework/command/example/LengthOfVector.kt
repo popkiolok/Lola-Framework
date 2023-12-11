@@ -13,6 +13,7 @@ fun main() {
     val cs = CommandSystem::class.lola.createInstance()
     cs.onCommand("length 6 8")
     cs.onCommand("length 78 56 78")
+    Lola.printInfo()
 }
 
 @Command("length")

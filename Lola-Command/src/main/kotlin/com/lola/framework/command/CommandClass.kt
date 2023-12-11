@@ -7,4 +7,8 @@ import com.lola.framework.core.decoration.getDecoration
 
 class CommandClass(target: LClass<out Runnable>, val data: Command) : ArgumentsClass(target) {
     val orderedArgs by lazy { OrderedArgumentSequence(target.getDecoration<ArgumentsClass>()) }
+
+    override fun toString(): String {
+        return "command ${data.name}"
+    }
 }
