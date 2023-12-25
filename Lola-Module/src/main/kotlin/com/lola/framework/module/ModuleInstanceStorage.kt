@@ -44,6 +44,19 @@ class ModuleInstanceStorage(val ctxInitializer: (Context) -> Unit = {}) {
         }
     }
 
+    fun <T : Any> load(
+        moduleClass: KClass<T>,
+        params: Map<KParameter, Any?> = emptyMap(),
+        propertyValues: Map<KProperty<*>, Any?> = emptyMap()
+    ): T = load(moduleClass.lola.asModuleClass, params, propertyValues)
+
+    @JvmOverloads
+    fun <T : Any> load(
+        moduleClass: Class<T>,
+        params: Map<KParameter, Any?> = emptyMap(),
+        propertyValues: Map<KProperty<*>, Any?> = emptyMap()
+    ): T = load(moduleClass.kotlin, params, propertyValues)
+
     /**
      * Unloads a module from loaded module storage.
      */
@@ -71,5 +84,5 @@ inline fun <reified T : Any> ModuleInstanceStorage.ifLoaded(action: (T) -> Unit)
 }
 
 inline fun <T : Any> ModuleInstanceStorage.ifLoaded(moduleClass: KClass<T>, action: (T) -> Unit) {
-    ifLoaded(moduleClass.lola.asModule, action)
+    ifLoaded(moduleClass.lola.asModuleClass, action)
 }

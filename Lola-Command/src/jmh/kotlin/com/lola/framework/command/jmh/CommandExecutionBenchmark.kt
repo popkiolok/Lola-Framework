@@ -33,13 +33,13 @@ open class CommandExecutionBenchmark {
 
         @Command("test")
         class TestCommand : Runnable {
-            @Setting("X")
+            @Param("X")
             lateinit var x: BigDecimal
 
-            @Setting("Y")
+            @Param("Y")
             var y: BigDecimal = BigDecimal(0)
 
-            @Setting("Z")
+            @Param("Z")
             lateinit var z: BigDecimal
 
             override fun run() {}

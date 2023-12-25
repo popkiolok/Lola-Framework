@@ -51,7 +51,7 @@ class LClass<T : Any> internal constructor(override val self: KClass<T>, val hol
         }
         log.error { "An error occurred while constructing class '$this'." }
         log.error { "No constructor applicable for parameters '${params.toJSON()}':" }
-        self.constructors.forEach { log.error { " - $it" } }
+        self.constructors.forEach { log.error { " - '$it', value suppliers: (${it.parameters.joinToString { it.lola.getDecorations(ValueSupplier::class).size.toString() }})" } }
         throw NullPointerException("No constructor present for the given parameters.")
     }
 

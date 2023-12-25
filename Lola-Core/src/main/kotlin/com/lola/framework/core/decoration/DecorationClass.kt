@@ -4,20 +4,16 @@ import com.lola.framework.core.*
 import com.lola.framework.core.context.Auto
 import com.lola.framework.core.context.AutoReference
 import kotlin.reflect.full.isSubclassOf
+import kotlin.reflect.full.primaryConstructor
 import kotlin.reflect.jvm.jvmErasure
 
 
 abstract class DecorationClass<T : Decoration<*>>(final override val target: LClass<T>) : Decoration<LClass<T>> {
-    protected lateinit var targetParam: LParameter
+    protected val targetParam: LParameter = target.self.constructorsParameters.first {
+        it.type.jvmErasure.isSubclassOf(Decorated::class)
+    }.lola
 
-    init {
-        target.self.constructorsParameters.forEach {
-            if (it.type.jvmErasure.isSubclassOf(Decorated::class)) {
-                it.lola.let { lp ->
-                    lp.decorateIfAbsent { AutoReference(lp, Auto("DecorationTarget")) }
-                    targetParam = lp
-                }
-            }
-        }
+    fun isApplicableTo(decorated: Decorated): Boolean {
+        return decorated::class.isSubclassOf(targetParam.self.type.jvmErasure)
     }
 }

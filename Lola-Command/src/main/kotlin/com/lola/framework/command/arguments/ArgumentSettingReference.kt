@@ -35,10 +35,13 @@ class ArgumentSettingReference(private val associatedModuleArg: ArgumentReferenc
     override fun parse(pctx: ParsingContext): ParseResult {
         val moduleClass = pctx.parsed[associatedModuleArg]?.value as ModuleClass<*>
         val asString = super.parseAsString(pctx.input, pctx.isLast)
-        val name = asString.value
-        val settings = moduleClass.target.getDecoratedMembers<SettingReference>().toMutableList()
+        if (asString is ParseResultFailure) {
+            return asString
+        }
+        val name = (asString as ParseResultSuccess<String>).value
+        val settings = moduleClass.target.getDecoratedMembers<SettingReference<*>>().toMutableList()
         moduleClass.target.self.constructorsParameters.mapNotNull {
-            it.lola.getDecorations<SettingReference>().firstOrNull()
+            it.lola.getDecorations<SettingReference<*>>().firstOrNull()
         }.filter { settings.none { s -> it.data.name == s.data.name } }.forEach { settings += it }
         val sett = settings.firstOrNull {
             name.equals(it.data.name, ignoreCase = true) ||
@@ -63,9 +66,10 @@ class ArgumentSettingReference(private val associatedModuleArg: ArgumentReferenc
     ): List<String> {
         val moduleClass = parsed[associatedModuleArg]?.value as ModuleClass<*>
         val asString = super.parseAsString(argsLeft, isLast)
+        val value = if (asString is ParseResultFailure) "" else (asString as ParseResultSuccess<String>).value
         return sortCompletions(
-            asString.value,
-            moduleClass.target.getDecoratedMembers<SettingReference>().map { it.data.name }.asIterable()
+            value,
+            moduleClass.target.getDecoratedMembers<SettingReference<*>>().map { it.data.name }.asIterable()
         )
     }
 }

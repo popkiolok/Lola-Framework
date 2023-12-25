@@ -1,7 +1,6 @@
 package com.lola.framework.event
 
 import com.lola.framework.core.decoration.ForHavingDecoratedMembers
-import com.lola.framework.core.decoration.MemberForDecorated
 import com.lola.framework.core.LClass
 import com.lola.framework.core.context.Context
 import com.lola.framework.core.decoration.CreateInstanceListener

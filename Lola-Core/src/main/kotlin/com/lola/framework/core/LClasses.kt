@@ -5,6 +5,7 @@ import com.lola.framework.core.decoration.ResolveClassListener
 import com.lola.framework.core.decoration.getDecorations
 import java.util.*
 import kotlin.reflect.KClass
+import kotlin.reflect.full.isSubclassOf
 
 val classes: Collection<LClass<*>>
     get() = classMap.values
@@ -20,6 +21,9 @@ val <T : Any> KClass<T>.lola: LClass<T>
         lClass
     } as LClass<T>
 
+val Any?.hasContext: Boolean
+    get() = this != null && instanceToContext.containsKey(this)
+
 val Any.objectContext: Context
     get() = instanceToContext[this]
         ?: run {
@@ -27,3 +31,5 @@ val Any.objectContext: Context
             log.error { "This happens when instance object is neither created with Lola-Framework API nor initialized with it." }
             throw NullPointerException("No context associated with object '$this' found.")
         }
+
+fun getSubclasses(clazz: LClass<*>) = classes.asSequence().filter { it.self.isSubclassOf(clazz.self) && it != clazz }

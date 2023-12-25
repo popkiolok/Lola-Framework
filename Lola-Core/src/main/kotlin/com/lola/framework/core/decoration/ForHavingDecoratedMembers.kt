@@ -24,7 +24,9 @@ class ForHavingDecoratedMembersDecorator<T : Decoration<*>>(target: LClass<T>, a
             override fun <T> onDecoratedMember(decoration: Decoration<LCallable<T, KCallable<T>>>) {
                 if (decoration::class.isSubclassOf(this@ForHavingDecoratedMembersDecorator.decoration) &&
                     !decoration.target.holder.hasDecoration(target.self)) {
-                    decoration.target.holder.decorate(target.createInstance { it["DecorationTarget"] = decoration.target.holder })
+                    val params = buildMap { put(targetParam.self, decoration.target.holder) }
+                    val targetInstance = target.createInstance(params)
+                    decoration.target.holder.decorate(targetInstance)
                 }
             }
         })

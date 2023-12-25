@@ -20,7 +20,7 @@ class ArgumentReference(override val target: LAnnotatedElement, private val hold
     }
 
     fun parse(pctx: ParsingContext): ParseResult {
-        val errors by lazy { ArrayList<() -> String>() }
+        val errors = ArrayList<() -> String>()
         if (parsers.isEmpty()) {
             log.error { "No parser present for argument ${this.toJSON()}." }
         }

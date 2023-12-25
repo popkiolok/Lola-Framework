@@ -84,6 +84,10 @@ abstract class Decorated {
     fun <T : Decoration<*>> getDecoration(clazz: KClass<T>): T {
         return clazz.cast(decorations[clazz]?.first())
     }
+
+    fun <T : Decoration<*>> findDecoration(clazz: KClass<T>): T? {
+        return decorations[clazz]?.first()?.let { clazz.cast(it) }
+    }
 }
 
 /**
@@ -100,3 +104,5 @@ inline fun <reified T : Decoration<*>> Decorated.getDecorations() = getDecoratio
  * [Decorated.getDecoration] that gets decoration type from reified type token.
  */
 inline fun <reified T : Decoration<*>> Decorated.getDecoration() = getDecoration(T::class)
+
+inline fun <reified T : Decoration<*>> Decorated.findDecoration() = findDecoration(T::class)

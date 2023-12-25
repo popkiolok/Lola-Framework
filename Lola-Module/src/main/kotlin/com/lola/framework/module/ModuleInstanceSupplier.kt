@@ -9,7 +9,7 @@ import java.util.PriorityQueue
 import kotlin.reflect.full.isSubclassOf
 
 interface ModuleInstanceSupplier {
-    val priority: Int
+    val priority: Double
 
     fun <T : Any> get(moduleClass: ModuleClass<T>, context: Context): T?
 }

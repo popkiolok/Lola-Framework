@@ -1,9 +1,6 @@
 package com.lola.framework.command.arguments
 
-import com.lola.framework.command.ParseResult
-import com.lola.framework.command.ParseResultSuccess
-import com.lola.framework.command.ParsingContext
-import com.lola.framework.command.SingletonArgumentParser
+import com.lola.framework.command.*
 import kotlin.reflect.KType
 import kotlin.reflect.jvm.jvmErasure
 
@@ -14,11 +11,14 @@ open class ArgumentString : SingletonArgumentParser {
         return parseAsString(pctx.input, pctx.isLast)
     }
 
-    protected fun parseAsString(argsLeft: String, isLast: Boolean): ParseResultSuccess<String> {
+    protected fun parseAsString(argsLeft: String, isLast: Boolean): ParseResult {
         if (argsLeft.startsWith('"')) {
             val str = argsLeft.substring(1).substringBefore('"')
             return ParseResultSuccess(str, (str.length + 3).coerceAtMost(argsLeft.length))
         } else if (isLast) {
+            if (argsLeft.isEmpty()) {
+                return ParseResultFailure { "Expected string value but found nothing. Use \"\" for empty string." }
+            }
             return ParseResultSuccess(argsLeft, argsLeft.length)
         }
         val word = argsLeft.substringBefore(' ')

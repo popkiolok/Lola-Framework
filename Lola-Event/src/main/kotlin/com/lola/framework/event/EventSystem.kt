@@ -30,14 +30,15 @@ class EventSystem(
     fun call(event: String, eventObject: Any?): Boolean {
         val ls = attached[event] ?: return false
         val iterator = ls.iterator()
-        val callback by lazy { ListenerCallback() }
         synchronized(ls) {
+            var callback: ListenerCallback? = null
             while (iterator.hasNext()) {
                 val (instance, listener) = iterator.next()
                 try {
                     if (listener.target.self.parameters.size == 2) {
                         listener.target.self.call(instance, eventObject)
                     } else {
+                        if (callback == null) callback = ListenerCallback()
                         listener.target.self.call(instance, eventObject, callback)
                         if (callback.requestDetach) {
                             iterator.remove()
@@ -64,14 +65,15 @@ class EventSystem(
     fun call(event: String): Boolean {
         val ls = attached[event] ?: return false
         val iterator = ls.iterator()
-        val callback by lazy { ListenerCallback() }
         synchronized(ls) {
+            var callback: ListenerCallback? = null
             while (iterator.hasNext()) {
                 val (instance, listener) = iterator.next()
                 try {
                     if (listener.target.self.parameters.size == 1) {
                         listener.target.self.call(instance)
                     } else {
+                        if (callback == null) callback = ListenerCallback()
                         listener.target.self.call(instance, callback)
                         if (callback.requestDetach) {
                             iterator.remove()

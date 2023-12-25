@@ -18,7 +18,7 @@ dependencies {
     implementation("org.jetbrains.kotlin:kotlin-reflect:1.+")
     implementation("it.unimi.dsi:fastutil:8.5.12")
     implementation("com.google.guava:guava:32.1.1-jre")
-    implementation("com.fasterxml.jackson.core:jackson-databind:2.+")
+    implementation("com.fasterxml.jackson.core:jackson-databind:2.15.+")
     implementation("org.reflections:reflections:0.+")
 
     testImplementation(kotlin("test"))

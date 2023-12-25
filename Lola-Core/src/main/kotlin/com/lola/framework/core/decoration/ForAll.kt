@@ -21,8 +21,10 @@ class ForAllDecorator<T : Decoration<*>>(target: LClass<T>) : DecorationClass<T>
                 get() = Lola
 
             override fun onDecoratedFound(decorated: Decorated) {
-                if (decorated::class.isSubclassOf(targetParam.self.type.jvmErasure)) {
-                    decorated.decorate(target.createInstance { it["DecorationTarget"] = decorated })
+                if (isApplicableTo(decorated)) {
+                    val params = buildMap { put(targetParam.self, decorated) }
+                    val decoration = target.createInstance(params)
+                    decorated.decorate(decoration)
                 }
             }
         })

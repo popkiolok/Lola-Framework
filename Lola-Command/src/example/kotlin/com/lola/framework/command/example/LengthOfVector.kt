@@ -2,6 +2,7 @@ package com.lola.framework.command.example
 
 import com.lola.framework.command.Command
 import com.lola.framework.command.CommandSystem
+import com.lola.framework.command.Param
 import com.lola.framework.core.Lola
 import com.lola.framework.core.lola
 import com.lola.framework.setting.Setting
@@ -18,13 +19,13 @@ fun main() {
 
 @Command("length")
 class LengthOfVector : Runnable {
-    @Setting("X")
+    @Param("X")
     lateinit var x: BigDecimal
 
-    @Setting("Y")
+    @Param("Y")
     var y: BigDecimal = BigDecimal(0)
 
-    @Setting("Z")
+    @Param("Z")
     lateinit var z: BigDecimal
 
     override fun run() {

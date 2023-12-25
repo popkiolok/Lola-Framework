@@ -21,10 +21,8 @@ class ArgumentBoolean : SingletonArgumentParser {
     override fun complete(argsLeft: String): List<String> {
         return sortCompletions(argsLeft.substringBefore(' '), allVariants)
     }
-
-    companion object {
-        private val yesVariants = arrayOf("+", "yes", "y", "true")
-        private val noVariants = arrayOf("-", "no", "n", "false")
-        private val allVariants = listOf(*(yesVariants + noVariants))
-    }
 }
+
+private val yesVariants = arrayOf("+", "yes", "y", "true")
+private val noVariants = arrayOf("-", "no", "n", "false")
+private val allVariants = listOf(*(yesVariants + noVariants))

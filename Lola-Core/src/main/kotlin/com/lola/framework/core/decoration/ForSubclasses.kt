@@ -23,7 +23,9 @@ class ForSubclassesDecorator<T : Decoration<*>>(target: LClass<T>, ann: ForSubcl
 
             override fun <T : Any> onClassFound(clazz: LClass<T>) {
                 if (clazz.self.isSubclassOf(parent)) {
-                    clazz.decorate(target.createInstance { it["DecorationTarget"] = clazz })
+                    val params = buildMap { put(targetParam.self, clazz) }
+                    val decoration = target.createInstance(params)
+                    clazz.decorate(decoration)
                 }
             }
         })

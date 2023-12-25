@@ -7,6 +7,7 @@ import org.reflections.scanners.Scanners
 import org.reflections.util.ConfigurationBuilder
 import java.io.PrintStream
 import java.lang.reflect.Modifier
+import java.lang.reflect.Modifier.isPrivate
 import java.util.ArrayList
 import kotlin.reflect.*
 
@@ -26,15 +27,18 @@ object Lola : Decorated(), DecorateListener<Lola>, DecorateClassListener<Lola>, 
             ╚══════╝░╚════╝░╚══════╝╚═╝░░╚═╝  ╚═╝░░░░░╚═╝░░╚═╝╚═╝░░╚═╝╚═╝░░░░░╚═╝╚══════╝░░░╚═╝░░░╚═╝░░░╚════╝░╚═╝░░╚═╝╚═╝░░╚═╝
         """.trimIndent()
         )
+        val packageNames = arrayOf("com.lola.framework", *Array(packages.size) { i -> packages[i].name })
         val reflections = Reflections(
-            ConfigurationBuilder().forPackages(
-                "com.lola.framework",
-                *Array(packages.size) { i -> packages[i].name }).setScanners(Scanners.SubTypes.filterResultsBy { true })
+            ConfigurationBuilder().forPackages(*packageNames).setScanners(Scanners.SubTypes.filterResultsBy { true })
         )
         reflections.getSubTypesOf(Any::class.java).forEach {
-            if (!it.isSynthetic && !it.isAnonymousClass && !Modifier.isPrivate(it.modifiers) &&
-                !it.name.endsWith("Kt") && !it.name.endsWith("\$DefaultImpls")) {
-                runCatching { it.kotlin.lola }.onFailure { e -> e.printStackTrace() }
+            if (packageNames.any { pkg -> it.name.startsWith(pkg) } && !it.isSynthetic && !it.isAnonymousClass &&
+                !isPrivate(it.modifiers) && !it.name.endsWith("Kt") && !it.name.endsWith("\$DefaultImpls")
+            ) {
+                runCatching {
+                    it.kotlin.members
+                    it.kotlin.lola
+                }.onFailure { e -> e.printStackTrace() }
             }
         }
         ForAnnotatedDecorator::class.lola.let {

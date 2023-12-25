@@ -5,7 +5,7 @@ import kotlin.reflect.KType
 import kotlin.reflect.jvm.jvmErasure
 
 open class ArgumentWord : SingletonArgumentParser {
-    override fun canParse(type: KType) = type.jvmErasure == String::class
+    override fun canParse(type: KType) = /*type.jvmErasure == String::class*/ false
 
     override fun parse(pctx: ParsingContext): ParseResult {
         return parseAsString(pctx.input)
